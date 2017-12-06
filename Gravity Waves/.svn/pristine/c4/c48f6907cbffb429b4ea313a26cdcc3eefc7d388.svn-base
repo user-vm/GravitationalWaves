@@ -1,0 +1,113 @@
+
+package com.GravityWaves.Detector;
+
+import java.net.URL;
+import java.util.ResourceBundle;
+
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.PerspectiveCamera;
+import javafx.scene.SceneAntialiasing;
+import javafx.scene.SubScene;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.DrawMode;
+import javafx.scene.shape.Sphere;
+
+import com.GravityWaves.util.Xform;
+
+
+public class Controller implements Initializable {
+
+	@FXML
+	BorderPane rootBorder;
+	
+	private SubScene scene3D;
+	private PerspectiveCamera camera;
+	private Group scene3DRoot;
+	private Group objectContainer;
+	private Xform cameraXform;
+	private Xform cameraXform2;
+	private Xform cameraXform3;
+	private double xCameraVal;
+	private double yCameraVal;
+	private double zCameraVal;
+	private double xRotCameraVal;
+	private double yRotCameraVal;
+	private double zRotCameraVal;
+	private Sphere test;
+    private final Xform world = new Xform();
+	private StackPane stackPane;
+
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
+
+		test = new Sphere(10);
+		test.setMaterial(new PhongMaterial(Color.RED));
+		test.setDrawMode(DrawMode.FILL);
+
+		scene3D = new SubScene(createContent(), 600, 500, true,
+				SceneAntialiasing.BALANCED);
+		stackPane = new StackPane();
+		stackPane.setPrefSize(600, 500);
+		stackPane.getChildren().add(scene3D);
+		scene3D.heightProperty().bind(stackPane.heightProperty());
+		scene3D.widthProperty().bind(stackPane.widthProperty());
+		stackPane.setMinSize(400, 400);
+
+		rootBorder.setCenter(stackPane);
+
+		scene3D.setFill(Color.BLACK);
+
+		scene3D.setCamera(camera);
+
+	}
+
+	private Parent createContent() {
+
+		// Create and position camera
+		camera = new PerspectiveCamera(true);
+		//buildCamera();
+		//camera.setFarClip(500);
+		
+		// Build the Scene Graph
+		scene3DRoot = new Group();
+		objectContainer = new Group();
+		scene3DRoot.getChildren().add(world);
+		world.getChildren().add(objectContainer);
+		objectContainer.getChildren().add(test);
+
+		return scene3DRoot;
+
+	}
+
+	//TODO: Error somewhere in here causing crash. RM
+	private void buildCamera() {
+		
+		scene3DRoot.getChildren().add(cameraXform);
+		cameraXform.getChildren().add(cameraXform2);
+		cameraXform2.getChildren().add(cameraXform3);
+		cameraXform3.getChildren().add(camera);
+		cameraXform3.setRotateZ(180.0);
+
+		camera.setNearClip(0.1);
+		camera.setFarClip(10000.0);
+		camera.setTranslateZ(-100);
+		cameraXform.ry.setAngle(320.0);
+		cameraXform.rx.setAngle(40);
+
+		xCameraVal = cameraXform2.t.getX();
+		yCameraVal = cameraXform2.t.getY();
+		zCameraVal = cameraXform2.t.getZ();
+
+		xRotCameraVal = cameraXform.rx.getAngle();
+		yRotCameraVal = cameraXform.ry.getAngle();
+		zRotCameraVal = cameraXform.rz.getAngle();
+		
+	}
+
+}

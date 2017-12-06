@@ -1,0 +1,353 @@
+// fuck it, I'm using this for shit
+
+package com.GravityWaves.Main;
+
+import javafx.application.Application;
+import javafx.scene.*;
+import javafx.scene.image.*;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.*;
+import javafx.scene.shape.*;
+import javafx.scene.transform.*;
+import javafx.stage.Stage;
+import javafx.animation.*;
+import javafx.util.*;
+import javafx.event.*;
+import java.util.*;
+import javafx.scene.layout.*;
+import javafx.scene.control.*;
+import javafx.fxml.*;
+
+public class Main extends Application {
+	
+	public Sphere testSphere;
+	public double mass1 = 1;
+	public Sphere testSphere2;
+	public double mass2 = 10;
+	public double distance=20;
+	public int angle = 0;
+	public int angle2 = 0;
+	public MeshView orbitMesh=new MeshView(new OrbitMesh(distance*mass1/(mass1+mass2)));
+	public MeshView orbitMesh2=new MeshView(new OrbitMesh(distance*mass2/(mass1+mass2)));
+	PerspectiveCamera camera;
+	final Xform cameraXform = new Xform();
+    final Xform cameraXform2 = new Xform();
+    final Xform cameraXform3 = new Xform();
+    double mousePosX;
+    double mousePosY;
+    double mouseOldX;
+    double mouseOldY;
+    double mouseDeltaX;
+    double mouseDeltaY;
+    double ONE_FRAME = 1.0 / 24.0;
+    double DELTA_MULTIPLIER = 200.0;
+    double CONTROL_MULTIPLIER = 0.1;
+    double SHIFT_MULTIPLIER = 0.1;
+    double ALT_MULTIPLIER = 0.5;
+    public Timeline timer = new Timeline();
+    boolean timelinePlaying = true;
+    static Group root, stuffContainer;
+    final Xform world = new Xform();
+    static ArrayList<ArrowBox> arrowBoxes = new ArrayList<ArrowBox>();
+    PhongMaterial orbitMaterial;
+    StackPane stackPane;
+    
+    public static void updateField(int numXPoints, int numYPoints, int numZPoints,
+    		double xDist, double yDist, double zDist){
+    	
+    	System.out.printf("%d %d %d",numXPoints,numYPoints,numZPoints);
+    	
+    	ArrowBox currentArrow;
+    	for(int i=0;i<numZPoints;i++){
+    		for(int j=0;j<numYPoints;j++){
+    			for(int k=0;k<numXPoints;k++){
+    				
+    				if((i*numYPoints+j)*numXPoints+k < arrowBoxes.size()){
+    					currentArrow = arrowBoxes.get((i*numYPoints+j)*numXPoints+k);
+    					currentArrow.boxXform.setTranslate(xDist*(k-((numXPoints-1)/2.0)),
+    							yDist*(j-((numYPoints-1)/2.0)), zDist*(i-((numZPoints-1)/2.0)));
+    					
+    					currentArrow.boxXform.setRy(Math.toDegrees(Math.atan2(-zDist*(i-((numZPoints-1)/2.0)),Math.sqrt(Math.pow(xDist*(k-((numXPoints-1)/2.0)),2))+Math.pow(yDist*(j-((numYPoints-1)/2.0)),2))));
+    					currentArrow.boxXform.setRz(Math.toDegrees(Math.atan2(yDist*(j-((numYPoints-1)/2.0)),xDist*(k-((numXPoints-1)/2.0)))));
+    					
+    					}
+    				else{
+    					currentArrow = new ArrowBox(xDist*(k-((numXPoints-1)/2.0)),
+    							yDist*(j-((numYPoints-1)/2.0)), zDist*(i-((numZPoints-1)/2.0)));
+    					
+    					currentArrow.boxXform.setRy(Math.toDegrees(Math.atan2(-zDist*(i-((numZPoints-1)/2.0)),Math.sqrt(Math.pow(xDist*(k-((numXPoints-1)/2.0)),2))+Math.pow(yDist*(j-((numYPoints-1)/2.0)),2))));
+    					currentArrow.boxXform.setRz(Math.toDegrees(Math.atan2(yDist*(j-((numYPoints-1)/2.0)),xDist*(k-((numXPoints-1)/2.0)))));
+    					
+    					stuffContainer.getChildren().add(currentArrow.boxXform);
+    					arrowBoxes.add(currentArrow);
+    				}
+    			}
+    		}
+    	}
+    		
+    	int numPoints = numZPoints*numYPoints*numXPoints;
+    	for (int i=numPoints;i<arrowBoxes.size();){
+    			
+    		stuffContainer.getChildren().remove(arrowBoxes.get(numPoints).boxXform);
+    		arrowBoxes.remove(numPoints);
+    	}
+    }
+	
+	private void handleMouse(Scene scene, final Node root) {
+        scene.setOnMousePressed(new EventHandler<MouseEvent>() {
+            @Override public void handle(MouseEvent me) {
+                mousePosX = me.getSceneX();
+                mousePosY = me.getSceneY();
+                mouseOldX = me.getSceneX();
+                mouseOldY = me.getSceneY();
+            }
+        });
+        scene.setOnMouseDragged(new EventHandler<MouseEvent>() {
+        	
+            @Override
+            public void handle(MouseEvent me) {
+            	//System.out.printf("ksgbjsbd");
+                mouseOldX = mousePosX;
+                mouseOldY = mousePosY;
+                mousePosX = me.getSceneX();
+                mousePosY = me.getSceneY();
+                mouseDeltaX = (mousePosX - mouseOldX);
+                mouseDeltaY = (mousePosY - mouseOldY);
+
+                double modifier = 1.0;
+                double modifierFactor = 0.1;
+
+                if (me.isControlDown()) {
+                    modifier = 0.1;
+                }
+                if (me.isShiftDown()) {
+                    modifier = 10.0;
+                }
+                if (me.isPrimaryButtonDown()) {
+                    cameraXform.ry.setAngle(cameraXform.ry.getAngle() - mouseDeltaX * modifierFactor * modifier * 2.0);  // +
+                    cameraXform.rx.setAngle(cameraXform.rx.getAngle() + mouseDeltaY * modifierFactor * modifier * 2.0);  // -
+                } else if (me.isSecondaryButtonDown()) {
+                    double z = camera.getTranslateZ();
+                    double newZ = z + mouseDeltaX * modifierFactor * modifier;
+                    camera.setTranslateZ(newZ);
+                } else if (me.isMiddleButtonDown()) {
+                    cameraXform2.t.setX(cameraXform2.t.getX() + mouseDeltaX * modifierFactor * modifier * 0.3);  // -
+                    cameraXform2.t.setY(cameraXform2.t.getY() + mouseDeltaY * modifierFactor * modifier * 0.3);  // -
+                }
+            }
+        });
+    }
+
+    private void handleKeyboard(Scene scene, final Node root1) {
+        final boolean moveCamera = true;
+        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent event) {
+                Duration currentTime;
+                switch (event.getCode()) {
+                    case Z:
+                        if (event.isShiftDown()) {
+                            cameraXform.ry.setAngle(0.0);
+                            cameraXform.rx.setAngle(0.0);
+                            camera.setTranslateZ(-300.0);
+                        }
+                        cameraXform2.t.setX(0.0);
+                        cameraXform2.t.setY(0.0);
+                        break;
+                    case SPACE:
+                        if (timelinePlaying) {
+                            timer.pause();
+                            timelinePlaying = false;
+                        } else {
+                            timer.play();
+                            timelinePlaying = true;
+                        }
+                        break;
+                    case UP:
+                        if (event.isControlDown() && event.isShiftDown()) {
+                            cameraXform2.t.setY(cameraXform2.t.getY() - 10.0 * CONTROL_MULTIPLIER);
+                        } else if (event.isAltDown() && event.isShiftDown()) {
+                            cameraXform.rx.setAngle(cameraXform.rx.getAngle() - 10.0 * ALT_MULTIPLIER);
+                        } else if (event.isControlDown()) {
+                            cameraXform2.t.setY(cameraXform2.t.getY() - 1.0 * CONTROL_MULTIPLIER);
+                        } else if (event.isAltDown()) {
+                            cameraXform.rx.setAngle(cameraXform.rx.getAngle() - 2.0 * ALT_MULTIPLIER);
+                        } else if (event.isShiftDown()) {
+                            double z = camera.getTranslateZ();
+                            double newZ = z + 5.0 * SHIFT_MULTIPLIER;
+                            camera.setTranslateZ(newZ);
+                        }
+                        break;
+                    case DOWN:
+                        if (event.isControlDown() && event.isShiftDown()) {
+                            cameraXform2.t.setY(cameraXform2.t.getY() + 10.0 * CONTROL_MULTIPLIER);
+                        } else if (event.isAltDown() && event.isShiftDown()) {
+                            cameraXform.rx.setAngle(cameraXform.rx.getAngle() + 10.0 * ALT_MULTIPLIER);
+                        } else if (event.isControlDown()) {
+                            cameraXform2.t.setY(cameraXform2.t.getY() + 1.0 * CONTROL_MULTIPLIER);
+                        } else if (event.isAltDown()) {
+                            cameraXform.rx.setAngle(cameraXform.rx.getAngle() + 2.0 * ALT_MULTIPLIER);
+                        } else if (event.isShiftDown()) {
+                            double z = camera.getTranslateZ();
+                            double newZ = z - 5.0 * SHIFT_MULTIPLIER;
+                            camera.setTranslateZ(newZ);
+                        }
+                        break;
+                    case RIGHT:
+                        if (event.isControlDown() && event.isShiftDown()) {
+                            cameraXform2.t.setX(cameraXform2.t.getX() + 10.0 * CONTROL_MULTIPLIER);
+                        } else if (event.isAltDown() && event.isShiftDown()) {
+                            cameraXform.ry.setAngle(cameraXform.ry.getAngle() - 10.0 * ALT_MULTIPLIER);
+                        } else if (event.isControlDown()) {
+                            cameraXform2.t.setX(cameraXform2.t.getX() + 1.0 * CONTROL_MULTIPLIER);
+                        } else if (event.isAltDown()) {
+                            cameraXform.ry.setAngle(cameraXform.ry.getAngle() - 2.0 * ALT_MULTIPLIER);
+                        }
+                        break;
+                    case LEFT:
+                        if (event.isControlDown() && event.isShiftDown()) {
+                            cameraXform2.t.setX(cameraXform2.t.getX() - 10.0 * CONTROL_MULTIPLIER);
+                        } else if (event.isAltDown() && event.isShiftDown()) {
+                            cameraXform.ry.setAngle(cameraXform.ry.getAngle() + 10.0 * ALT_MULTIPLIER);  // -
+                        } else if (event.isControlDown()) {
+                            cameraXform2.t.setX(cameraXform2.t.getX() - 1.0 * CONTROL_MULTIPLIER);
+                        } else if (event.isAltDown()) {
+                            cameraXform.ry.setAngle(cameraXform.ry.getAngle() + 2.0 * ALT_MULTIPLIER);  // -
+                        }
+                        break;
+                }
+            }
+        });
+    }
+    
+ 
+    public Parent createContent() throws Exception {
+ 
+        // Create and position camera
+        camera = new PerspectiveCamera(true);
+ 
+        // Build the Scene Graph
+        root = new Group();
+        stuffContainer = new Group();
+        buildCamera();
+        root.getChildren().add(world);
+        world.getChildren().add(stuffContainer);
+        stuffContainer.getChildren().add(testSphere);
+        stuffContainer.getChildren().add(testSphere2);
+        stuffContainer.getChildren().add(orbitMesh);
+        stuffContainer.getChildren().add(orbitMesh2);
+        for (int i=0;i<9;i++)
+        	for (int j=0;j<9;j++){
+        		arrowBoxes.add(new ArrowBox(9*(i-4),9*(j-4),0));
+        		arrowBoxes.get(i*9+j).boxXform.setRz(Math.toDegrees(Math.atan2(j-4,i-4)));
+        		arrowBoxes.get(i*9+j).box.setMaterial(orbitMaterial);
+        		stuffContainer.getChildren().add(arrowBoxes.get(i*9+j).boxXform);
+        	}
+        
+        orbitMesh.setCullFace(CullFace.NONE);
+        camera.setFarClip(500);
+ 
+        return root;
+    }
+    
+    public void updateSphere(double x,double y){
+    	
+    	testSphere.setTranslateX(x*(distance*mass2/(mass1+mass2)));
+    	testSphere.setTranslateY(y*(distance*mass2/(mass1+mass2)));
+    	testSphere2.setTranslateX(-x*(distance*mass1/(mass1+mass2)));
+    	testSphere2.setTranslateY(-y*(distance*mass1/(mass1+mass2)));
+    }
+    
+    public void updatePos(){
+    	angle+=5;
+    	angle%=360;
+    	for (ArrowBox i:arrowBoxes){
+    		i.scaleX(5*(1+Math.sin(Math.toRadians(angle))));
+    	}
+    	updateSphere((Math.cos(Math.toRadians(angle))),((Math.sin(Math.toRadians(angle)))));
+    }
+    
+    private void buildCamera() {
+        root.getChildren().add(cameraXform);
+        cameraXform.getChildren().add(cameraXform2);
+        cameraXform2.getChildren().add(cameraXform3);
+        cameraXform3.getChildren().add(camera);
+        cameraXform3.setRotateZ(180.0);
+
+        camera.setNearClip(0.1);
+        camera.setFarClip(10000.0);
+        camera.setTranslateZ(-100);
+        cameraXform.ry.setAngle(320.0);
+        cameraXform.rx.setAngle(40);
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+    	
+    	BorderPane border = new BorderPane();
+    	Button button = new Button();
+    	
+        primaryStage.setResizable(true);
+        
+        //sphere
+        testSphere = new Sphere(2.5);
+        testSphere.setMaterial(new PhongMaterial(Color.RED));
+        testSphere.setDrawMode(DrawMode.FILL);
+        
+        testSphere2 = new Sphere(2.5*Math.pow(mass2/mass1,1.0/3));
+        testSphere2.setMaterial(new PhongMaterial(Color.RED));
+        testSphere2.setDrawMode(DrawMode.FILL);
+        
+        orbitMaterial = new PhongMaterial(Color.BLUE);
+        orbitMaterial.setSelfIlluminationMap(new Image("green.png"));
+        orbitMesh.setMaterial(orbitMaterial);
+        orbitMesh.setDrawMode(DrawMode.LINE);
+        
+        orbitMesh2.setMaterial(orbitMaterial);
+        orbitMesh2.setDrawMode(DrawMode.LINE);
+        
+        SubScene scene3D = new SubScene(createContent(),600,500,true,SceneAntialiasing.BALANCED);
+        stackPane = new StackPane();
+        stackPane.setPrefSize(600, 500);
+        stackPane.getChildren().add(scene3D);
+        scene3D.heightProperty().bind(stackPane.heightProperty());
+        scene3D.widthProperty().bind(stackPane.widthProperty());
+        stackPane.setMinSize(0, 0);
+
+        border.setCenter(stackPane);
+        border.setLeft(FXMLLoader.load(getClass().getResource("leftpane.fxml")));
+        
+        Scene scene = new Scene(border);
+        scene3D.setFill(Color.BLACK);
+        primaryStage.setScene(scene);
+        scene3D.setCamera(camera);
+        primaryStage.show();
+
+        final Duration oneFrameAmt = Duration.seconds(0.04);
+        final KeyFrame oneFrame = new KeyFrame(oneFrameAmt,
+        		new EventHandler<ActionEvent>() {
+            		@Override
+            		public void handle(ActionEvent evt) {
+            			updatePos();
+            		}
+        	});
+
+		timer = TimelineBuilder.create()
+                                .cycleCount(-1)
+                                .keyFrames(oneFrame)
+                                .build();
+        timer.playFromStart();
+        //System.out.printf("1");
+        handleKeyboard(scene, world);
+        handleMouse(scene, world);
+        
+    }
+
+    /**
+     * Java main for when running without JavaFX launcher
+     */
+    public static void main(String[] args) {
+        launch(args);
+    }
+}

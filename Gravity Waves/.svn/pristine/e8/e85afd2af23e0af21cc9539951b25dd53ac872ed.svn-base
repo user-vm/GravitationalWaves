@@ -1,0 +1,120 @@
+package com.GravityWaves.Detector;
+
+import javafx.application.Application;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.scene.Group;
+import javafx.scene.PerspectiveCamera;
+import javafx.scene.Scene;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
+import javafx.scene.shape.Cylinder;
+import javafx.scene.transform.Rotate;
+import javafx.stage.Stage;
+
+public class DetectorScene extends Application{
+	
+	private final int DETECTOR_SIZE = 25;
+	private final int ARM_LENGTH = 500;
+	
+	private double anchorX, anchorY, anchorZ;
+	private double anchorAngleX, anchorAngleY, anchorAngleZ;
+	
+	private final DoubleProperty angleX = new SimpleDoubleProperty(25);
+	private final DoubleProperty angleY = new SimpleDoubleProperty(40);
+	private final DoubleProperty angleZ = new SimpleDoubleProperty(40);
+	
+	PerspectiveCamera camera = new PerspectiveCamera(false);
+
+	@Override
+	public void start(Stage stage) throws Exception{
+		
+		stage.setTitle("eLISA Detector");
+		stage.setScene(makeScene());
+		
+		
+		stage.show();
+		
+	}
+	
+	private Scene makeScene() throws Exception{
+		
+		Box detectorA = new Box(DETECTOR_SIZE, DETECTOR_SIZE, DETECTOR_SIZE);
+		detectorA.setMaterial(new PhongMaterial(Color.SILVER));
+		
+		Box detectorB = new Box(DETECTOR_SIZE, DETECTOR_SIZE, DETECTOR_SIZE);
+		detectorB.setMaterial(new PhongMaterial(Color.SILVER));
+		
+		detectorB.setTranslateX(ARM_LENGTH);
+		
+		Box detectorC = new Box(DETECTOR_SIZE, DETECTOR_SIZE, DETECTOR_SIZE);
+		detectorC.setMaterial(new PhongMaterial(Color.SILVER));
+		
+		detectorC.setTranslateX(ARM_LENGTH/2);
+		detectorC.setTranslateY( Math.sqrt( Math.pow(ARM_LENGTH, 2) - Math.pow(ARM_LENGTH/2, 2) ) );
+		detectorC.setRotationAxis(Rotate.Z_AXIS);
+		detectorC.setRotate(60);
+		
+		
+		Cylinder c1 = new Cylinder(1, ARM_LENGTH);
+		c1.setMaterial(new PhongMaterial(Color.RED));
+		c1.setRotationAxis(Rotate.Z_AXIS);
+		c1.setRotate(90);
+		c1.setTranslateX(250);
+		
+		Cylinder c2 = new Cylinder(1, ARM_LENGTH);
+		c2.setMaterial(new PhongMaterial(Color.RED));
+		c2.setRotationAxis(Rotate.Z_AXIS);
+		c2.setRotate(150);
+		c2.setTranslateX(125);
+		c2.setTranslateY(225);
+		
+		Group root = new Group();
+		//Group detectors = new Group();
+		//Group lasers = new Group();
+		
+		//root.getChildren().add(detectors);
+		//root.getChildren().add(lasers);		
+				
+		root.getChildren().add(c1);
+		root.getChildren().add(c2);
+		root.getChildren().add(detectorA);
+		root.getChildren().add(detectorB);
+		root.getChildren().add(detectorC);
+
+		//lasers.getChildren().add(c1);
+		//lasers.getChildren().add(c2);
+		
+		root.setTranslateX(50);
+		root.setTranslateY(50);
+		
+		
+		
+		Scene scene = new Scene(root, 900, 600);
+		scene.setFill(Color.BLACK);
+		
+		scene.setOnMousePressed(event -> {
+			anchorX = event.getSceneX();
+			anchorY = event.getSceneY();
+			anchorZ = event.getSceneY();
+			anchorAngleX = angleX.get();
+			anchorAngleY = angleY.get();
+			anchorAngleZ = angleZ.get();
+		});
+		
+		scene.setOnMouseDragged(event -> {
+			angleX.set(anchorAngleX - (anchorY - event.getSceneY()));
+			angleY.set(anchorAngleY + anchorX - event.getSceneX());
+		});
+		
+		scene.setCamera(camera);
+		
+		return scene;
+		
+	}
+	
+	
+	public static void main(String[] args){ launch(args); }
+	
+}

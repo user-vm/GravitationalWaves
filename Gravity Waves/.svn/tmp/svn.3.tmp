@@ -1,0 +1,112 @@
+
+package com.GravityWaves.Main;
+
+import javafx.application.Application;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.scene.Group;
+import javafx.scene.PerspectiveCamera;
+import javafx.scene.PointLight;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Sphere;
+import javafx.scene.transform.Rotate;
+import javafx.stage.Stage;
+
+
+public class Main extends Application {
+	
+//	private int WIDTH = 1080;
+//	private int HEIGHT = WIDTH / 16 * 9;
+
+	double anchorX, anchorY, anchorZ;
+
+	private double anchorAngleX = 0;
+	private double anchorAngleY = 0;
+	private double anchorAngleZ = 0;
+
+	private final DoubleProperty angleX = new SimpleDoubleProperty(0);
+	private final DoubleProperty angleY = new SimpleDoubleProperty(0);
+	private final DoubleProperty angleZ = new SimpleDoubleProperty(0);
+
+
+	PerspectiveCamera scenePerspectiveCamera = new PerspectiveCamera(false);
+
+	@Override
+	public void start(Stage stage) throws Exception {
+
+		stage.setTitle("Space stuff...");
+
+		Image diffuseMap = new Image(Main.class
+				.getResource("/img/earth-mercator.jpg")
+				.toExternalForm());
+		
+		PhongMaterial earthMaterial = new PhongMaterial();
+		earthMaterial.setDiffuseMap(diffuseMap);
+		
+		final Sphere earth = new Sphere(100);
+		earth.setMaterial(earthMaterial);
+		
+		final Group parent = new Group(earth);
+		parent.setTranslateX(450);
+		parent.setTranslateY(450);
+		parent.setTranslateZ(100);
+		
+		Rotate xRotate;
+		Rotate yRotate;
+		Rotate zRotate;
+		
+		parent.getTransforms().setAll(
+				xRotate = new Rotate(0, Rotate.X_AXIS),
+				yRotate = new Rotate(0, Rotate.Y_AXIS),
+				zRotate = new Rotate(0, Rotate.Z_AXIS)
+				);
+		
+		xRotate.angleProperty().bind(angleX);
+		yRotate.angleProperty().bind(angleY);
+		zRotate.angleProperty().bind(angleZ);
+		
+		final Group root = new Group();
+		root.getChildren().add(parent);
+		
+		final Scene scene = new Scene(root, 900, 900, true);
+		scene.setFill(Color.BLACK);
+		
+//		scene.setOnMousePressed((MouseEvent event) -> {
+//			anchorX = event.getSceneX();
+//			anchorY = event.getSceneY();
+//			anchorAngleX = angleX.get();
+//			anchorAngleY = angleY.get();
+//		});
+//		
+//		scene.setOnMouseDragged((MouseEvent event) -> {
+//			angleX.set(anchorAngleX + anchorY + event.getSceneY());
+//			angleY.set(anchorAngleY + anchorX - event.getSceneX());
+//		});
+		
+		angleY.set(-45);
+		angleZ.set(-15);
+		
+		
+		
+		PointLight pointLight = new PointLight(Color.WHITE);
+		pointLight.setTranslateX(400);
+		pointLight.setTranslateY(400);
+		pointLight.setTranslateZ(-3000);
+		
+		scene.setCamera(scenePerspectiveCamera);		
+		root.getChildren().addAll(pointLight, scenePerspectiveCamera);
+		//stage.setResizable(false);
+		stage.setScene(scene);
+		
+		stage.show();		
+
+	}
+
+	// Main method is ignored by JavaFx. Only here as a fallback.
+	public static void main(String[] args) { launch(args); }
+
+}

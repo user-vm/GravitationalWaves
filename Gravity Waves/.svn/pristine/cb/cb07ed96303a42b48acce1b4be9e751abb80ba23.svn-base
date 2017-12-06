@@ -1,0 +1,34 @@
+
+package com.GravityWaves.Main;
+
+import java.io.IOException;
+
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+public class Main extends Application {
+
+    @Override
+    public void start(Stage primaryStage) throws IOException {
+    	
+    	primaryStage.setResizable(true);
+    	primaryStage.setMinWidth(700);
+    	primaryStage.setMinHeight(440);
+    	
+    	Scene scene = new Scene(FXMLLoader.load(getClass().getResource("/fxml/leftpane.fxml")));
+    	
+    	primaryStage.setScene(scene);
+    	
+    	primaryStage.show();
+        
+    }
+
+    /**
+     * Java main for when running without JavaFX launcher
+     */
+    public static void main(String[] args) {
+        launch(args);
+    }
+}

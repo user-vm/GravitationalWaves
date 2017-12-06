@@ -1,0 +1,443 @@
+package com.GravityWaves.Main;
+
+import java.net.URL;
+import java.util.*;
+
+import javafx.fxml.*;
+import javafx.scene.control.*;
+import javafx.beans.value.*;
+
+@SuppressWarnings("rawtypes")
+public class Controller implements Initializable{
+	
+	int numXPoints = 9;
+	int numYPoints = 9;
+	int numZPoints = 1;
+	
+	double xDist = 9;
+	double yDist = 9;
+	double zDist = 9;
+	
+	double mass1;
+	double mass2;
+	double radius1;
+	double radius2;
+	double distance;
+	
+	Map<String, Double> massMap = new HashMap<String, Double>();
+	Map<String, Double> distMap = new HashMap<String, Double>();
+	Map<String, Double> angleMap = new HashMap<String, Double>();
+	
+	@FXML
+	TextField mass1Text;
+	@FXML
+	ComboBox mass1UnitsBox;
+	@FXML
+	TextField radius1Text;
+	@FXML
+	ComboBox radius1UnitsBox;
+	@FXML
+	TextField mass2Text;
+	@FXML
+	ComboBox mass2UnitsBox;
+	@FXML
+	TextField radius2Text;
+	@FXML
+	ComboBox radius2UnitsBox;
+	@FXML
+	TextField distanceText;
+	@FXML
+	ComboBox distanceUnitsBox;
+	@FXML
+	CheckBox equalDensitiesChk;
+	@FXML
+	CheckBox showOrbitsChk;
+	@FXML
+	CheckBox showFieldChk;
+	@FXML
+	TextField numXPointsText;
+	@FXML
+	TextField numYPointsText;
+	@FXML
+	TextField numZPointsText;
+	@FXML
+	TextField xPointsDistText;
+	@FXML
+	TextField yPointsDistText;
+	@FXML
+	TextField zPointsDistText;
+	@FXML
+	ComboBox xPointsDistUnitsBox;
+	@FXML
+	ComboBox yPointsDistUnitsBox;
+	@FXML
+	ComboBox zPointsDistUnitsBox;
+	@FXML
+	TextField xAxisRotText;
+	@FXML
+	TextField yAxisRotText;
+	@FXML
+	TextField zAxisRotText;
+	@FXML
+	ComboBox xAxisRotUnitsBox;
+	@FXML
+	ComboBox yAxisRotUnitsBox;
+	@FXML
+	ComboBox zAxisRotUnitsBox;
+	
+	private final ChangeListener<Boolean> starFocusListener = new ChangeListener<Boolean>(){
+		
+		@Override
+		public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+			if (newValue==false)
+				updateStars();
+		}
+	};
+	
+	private final ChangeListener<Boolean> fieldFocusListener = new ChangeListener<Boolean>(){
+		
+		@Override
+		public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+			if (newValue==false)
+				updatePoints();
+		}
+	};
+	
+	private final ChangeListener<String> starUnitListener = new ChangeListener<String>(){
+		
+		@Override
+		public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+			updateStarUnits();
+		}
+	};
+	
+	private final ChangeListener<String> fieldUnitListener = new ChangeListener<String>(){
+		
+		@Override
+		public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+			updateFieldUnits();
+		}
+	};
+	
+	/**
+     * Initializes the controller class.
+     */
+    @SuppressWarnings("unchecked")
+	@Override
+    public void initialize(URL url, ResourceBundle rsrcs) {
+
+        assert mass1Text != null : "fx:id=\"mass1Text\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert mass1UnitsBox != null : "fx:id=\"mass1UnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert radius1Text != null : "fx:id=\"radius1Text\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert radius1UnitsBox != null : "fx:id=\"radius1UnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert mass2Text != null : "fx:id=\"mass2Text\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert mass2UnitsBox != null : "fx:id=\"mass2UnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert radius2Text != null : "fx:id=\"radius2Text\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert radius2UnitsBox != null : "fx:id=\"radius2UnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert distanceText != null : "fx:id=\"distanceText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert distanceUnitsBox != null : "fx:id=\"distanceUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert equalDensitiesChk != null : "fx:id=\"equalDensitiesChk\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert showOrbitsChk != null : "fx:id=\"showOrbitsChk\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        
+        assert showFieldChk != null : "fx:id=\"showFieldChk\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert numXPointsText != null : "fx:id=\"numXPointsText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert numYPointsText != null : "fx:id=\"numYPointsText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert numZPointsText != null : "fx:id=\"numZPointsText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert xPointsDistText != null : "fx:id=\"xPointsDistText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert yPointsDistText != null : "fx:id=\"yPointsDistText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert zPointsDistText != null : "fx:id=\"zPointsDistText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert xPointsDistUnitsBox != null : "fx:id=\"xPointsDistUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert yPointsDistUnitsBox != null : "fx:id=\"yPointsDistUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert zPointsDistUnitsBox != null : "fx:id=\"zPointsDistUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert xAxisRotText != null : "fx:id=\"xAxisRotText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert yAxisRotText != null : "fx:id=\"yAxisRotText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert zAxisRotText != null : "fx:id=\"zAxisRotText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert xAxisRotUnitsBox != null : "fx:id=\"xAxisRotUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert yAxisRotUnitsBox != null : "fx:id=\"yAxisRotUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert zAxisRotUnitsBox != null : "fx:id=\"zAxisRotUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+    
+        mass1Text.setText(Double.toString(Main.mass1));
+        mass1Text.focusedProperty().addListener(starFocusListener);
+        
+        mass2Text.setText(Double.toString(Main.mass2));
+        mass2Text.focusedProperty().addListener(starFocusListener);
+        
+        radius1Text.setText(Double.toString(Main.radius1));
+        radius1Text.focusedProperty().addListener(starFocusListener);
+        
+        radius2Text.setText(Double.toString(Main.radius2));
+        radius2Text.focusedProperty().addListener(starFocusListener);
+        
+        numXPointsText.focusedProperty().addListener(fieldFocusListener);
+        numYPointsText.focusedProperty().addListener(fieldFocusListener);
+        numZPointsText.focusedProperty().addListener(fieldFocusListener);
+        
+        xPointsDistText.focusedProperty().addListener(fieldFocusListener);
+        yPointsDistText.focusedProperty().addListener(fieldFocusListener);
+        zPointsDistText.focusedProperty().addListener(fieldFocusListener);
+        
+        
+        
+        radius1UnitsBox.getItems().addAll("m","km","au","ly","pc");
+        radius1UnitsBox.setValue("km");
+        radius1UnitsBox.valueProperty().addListener(starUnitListener);
+        
+        radius2UnitsBox.getItems().addAll("m","km","au","ly","pc");
+        radius2UnitsBox.setValue("km");
+        radius2UnitsBox.valueProperty().addListener(starUnitListener);
+        
+        mass1UnitsBox.getItems().addAll("kg","t","M☉");
+        mass1UnitsBox.setValue("kg");
+        mass1UnitsBox.valueProperty().addListener(starUnitListener);
+        
+        mass2UnitsBox.getItems().addAll("kg","t","M☉");
+        mass2UnitsBox.setValue("kg");
+        mass2UnitsBox.valueProperty().addListener(starUnitListener);
+        
+        xPointsDistUnitsBox.getItems().addAll("m","km","au","ly","pc");
+        xPointsDistUnitsBox.setValue("km");
+        mass2UnitsBox.valueProperty().addListener(fieldUnitListener);
+        
+        yPointsDistUnitsBox.getItems().addAll("m","km","au","ly","pc");
+        yPointsDistUnitsBox.setValue("km");
+        mass2UnitsBox.valueProperty().addListener(fieldUnitListener);
+        
+        zPointsDistUnitsBox.getItems().addAll("m","km","au","ly","pc");
+        zPointsDistUnitsBox.setValue("km");
+        mass2UnitsBox.valueProperty().addListener(fieldUnitListener);
+        
+        xAxisRotUnitsBox.getItems().addAll("°","rad");
+        xAxisRotUnitsBox.setValue("°");
+        mass2UnitsBox.valueProperty().addListener(fieldUnitListener);
+        
+        yAxisRotUnitsBox.getItems().addAll("°","rad");
+        yAxisRotUnitsBox.setValue("°");
+        mass2UnitsBox.valueProperty().addListener(fieldUnitListener);
+        
+        zAxisRotUnitsBox.getItems().addAll("°","rad");
+        zAxisRotUnitsBox.setValue("°");
+        mass2UnitsBox.valueProperty().addListener(fieldUnitListener);
+        
+        distanceUnitsBox.getItems().addAll("m","km","au","ly","pc");
+        distanceUnitsBox.setValue("km");
+        distanceUnitsBox.valueProperty().addListener(starUnitListener);
+        
+        distanceText.setText(Double.toString(Main.distance));
+        
+        mass1 = Main.mass1;
+        mass2 = Main.mass2;
+        radius1 = Main.radius1;
+        radius2 = Main.radius2;
+        distance = Main.distance;
+        
+        distMap.put("m", Main.M);
+        distMap.put("km", Main.KM);
+        distMap.put("au", Main.AU);
+        distMap.put("pc", Main.PC);
+        distMap.put("ly", Main.LY);
+        
+        massMap.put("kg", Main.KG);
+        massMap.put("t", Main.T);
+        massMap.put("M☉", Main.SM);
+        
+        angleMap.put("°", Main.DEG);
+        angleMap.put("rad", Main.RAD);
+    }
+    
+    public void updatePoints(){
+    	
+    	try{
+    		int numXPointsNew, numYPointsNew, numZPointsNew;
+    		numXPointsNew = (int)(Double.parseDouble(numXPointsText.getText()));
+    		numYPointsNew = (int)(Double.parseDouble(numYPointsText.getText()));
+    		numZPointsNew = (int)(Double.parseDouble(numZPointsText.getText()));
+    		
+    		double xDistNew = Double.parseDouble(xPointsDistText.getText())*Main.xDistUnits;
+    		double yDistNew = Double.parseDouble(yPointsDistText.getText())*Main.yDistUnits;
+    		double zDistNew = Double.parseDouble(zPointsDistText.getText())*Main.zDistUnits;
+    		
+    		if(numXPointsNew<0 || numYPointsNew<0 || numZPointsNew<0 || xDistNew<0 || yDistNew<0
+    				|| zDistNew<0){
+    			
+    			numXPointsText.setText(Integer.toString(numXPoints));
+    			numYPointsText.setText(Integer.toString(numYPoints));
+    			numZPointsText.setText(Integer.toString(numZPoints));
+    			
+    			xPointsDistText.setText(Double.toString(xDist/Main.xDistUnits));
+    			yPointsDistText.setText(Double.toString(yDist/Main.yDistUnits));
+    			zPointsDistText.setText(Double.toString(zDist/Main.zDistUnits));
+    			
+    			return;
+    		}
+    		
+    		if(numXPoints!=numXPointsNew || numYPoints!=numYPointsNew || numZPoints!=numZPointsNew
+    				|| xDist!=xDistNew || yDist!=yDistNew || zDist!=zDistNew){
+    		
+    			numXPoints = numXPointsNew;
+    			numYPoints = numYPointsNew;
+    			numZPoints = numZPointsNew;
+    		
+    			xDist = xDistNew;
+    			yDist = yDistNew;
+    			zDist = zDistNew;
+    		
+    			Main.updateField(numXPoints,numYPoints,numZPoints,xDist,yDist,zDist);
+    		}
+    		
+    	}catch(Exception E){}
+    	
+    	numXPointsText.setText(Integer.toString(numXPoints));
+		numYPointsText.setText(Integer.toString(numYPoints));
+		numZPointsText.setText(Integer.toString(numZPoints));
+    	
+		xPointsDistText.setText(Double.toString(xDist/Main.xDistUnits));
+		yPointsDistText.setText(Double.toString(yDist/Main.yDistUnits));
+		zPointsDistText.setText(Double.toString(zDist/Main.zDistUnits));
+    }
+    
+    public void toggleShowOrbits(){
+    	
+    	Main.setOrbitsVisibility(showOrbitsChk.isSelected());
+    }
+    
+    public void toggleShowField(){
+    	
+    	Main.setFieldVisibility(showFieldChk.isSelected());
+    	
+    }
+    
+    public void updateStars(){
+    	
+    	distance = Main.distance;
+		radius2 = Main.radius2;
+		radius1 = Main.radius1;
+		mass2 = Main.mass2;
+		mass1 = Main.mass1;
+    	
+    	try{
+    		double newMass1 = Double.parseDouble(mass1Text.getText())*Main.mass1Units;
+    		double newMass2 = Double.parseDouble(mass2Text.getText())*Main.mass2Units;
+    		double newRadius1 = Double.parseDouble(radius1Text.getText())*Main.radius1Units;
+    		double newRadius2 = Double.parseDouble(radius2Text.getText())*Main.radius2Units;
+    		double newDistance = Double.parseDouble(distanceText.getText())*Main.distUnits;
+    		
+    		if(newMass1<0 || newMass2<0 || newRadius1<0 || newRadius2<0 || newDistance<0){
+    			
+    			mass1Text.setText(Double.toString(Main.mass1/Main.mass1Units));
+    			mass2Text.setText(Double.toString(Main.mass2/Main.mass2Units));
+    			radius1Text.setText(Double.toString(Main.radius1/Main.radius1Units));
+    			radius2Text.setText(Double.toString(Main.radius2/Main.radius2Units));
+    			distanceText.setText(Double.toString(Main.distance/Main.distUnits));
+    			
+    			return;
+    		}
+    		
+    		System.out.printf("star");
+    		
+    		if(mass1!=newMass1 || mass2!=newMass2 || radius1!=newRadius1 || radius2!=newRadius2
+    				|| distance!=newDistance){
+    			
+    			distance = newDistance;
+    			radius2 = newRadius2;
+    			radius1 = newRadius1;
+    			mass2 = newMass2;
+    			mass1 = newMass1;
+    			
+    			Main.setStars(mass1, radius1, mass2, radius2, distance);
+    			
+    			mass1 = Main.mass1;
+    			mass2 = Main.mass2;
+    			radius1 = Main.radius1;
+    			radius2 = Main.radius2;
+    			distance = Main.distance;
+    		}
+    		
+    		radius1Text.setText(Double.toString(Main.radius1/Main.radius1Units));
+    		radius2Text.setText(Double.toString(Main.radius2/Main.radius2Units));
+    		
+    	}catch(Exception E){ }
+    	
+    	mass1Text.setText(Double.toString(Main.mass1/Main.mass1Units));
+		mass2Text.setText(Double.toString(Main.mass2/Main.mass2Units));
+		radius1Text.setText(Double.toString(Main.radius1/Main.radius1Units));
+		radius2Text.setText(Double.toString(Main.radius2/Main.radius2Units));
+		distanceText.setText(Double.toString(Main.distance/Main.distUnits));
+
+    }
+    
+    public void updateStarUnits(){
+    	
+    	if(massMap.get(mass1UnitsBox.getValue())!=Main.mass1Units){
+    		Main.mass1 = Main.mass1*massMap.get(mass1UnitsBox.getValue())/Main.mass1Units;
+    		Main.mass1Units = massMap.get(mass1UnitsBox.getValue());
+    		mass1 = Main.mass1;
+    		mass1Text.setText(Double.toString(mass1/Main.mass1Units));
+    		Main.setStars(mass1, radius1, mass2, radius2, distance);
+    		return;}
+    	
+    	if(massMap.get(mass2UnitsBox.getValue())!=Main.mass2Units){
+    		Main.mass2 = Main.mass2*massMap.get(mass2UnitsBox.getValue())/Main.mass2Units;
+    		Main.mass2Units = massMap.get(mass2UnitsBox.getValue());
+    		mass2 = Main.mass2;
+    		mass2Text.setText(Double.toString(mass2/Main.mass2Units));
+    		Main.setStars(mass1, radius1, mass2, radius2, distance);
+    		return;}
+    		
+    	if(distMap.get(radius1UnitsBox.getValue())!=Main.radius1Units){
+    		Main.radius1 = Main.radius1*distMap.get(radius1UnitsBox.getValue())/Main.radius1Units;
+    		Main.radius1Units = distMap.get(radius1UnitsBox.getValue());
+    		radius1 = Main.radius1;
+    		radius1Text.setText(Double.toString(radius1/Main.radius1Units));
+    		Main.setStars(mass1, radius1, mass2, radius2, distance);
+    		return;}
+    	
+    	if(distMap.get(radius2UnitsBox.getValue())!=Main.radius2Units){
+    		Main.radius2 = Main.radius2*distMap.get(radius2UnitsBox.getValue())/Main.radius2Units;
+    		Main.radius2Units = distMap.get(radius2UnitsBox.getValue());
+    		radius2 = Main.radius2;
+    		radius2Text.setText(Double.toString(radius2/Main.radius2Units));
+    		Main.setStars(mass1, radius1, mass2, radius2, distance);
+    		return;}
+    	
+    	if(distMap.get(distanceUnitsBox.getValue())!=Main.distUnits){
+    		Main.distance = Main.distance*distMap.get(distanceUnitsBox.getValue())/Main.distUnits;
+    		Main.distUnits = distMap.get(distanceUnitsBox.getValue());
+    		distance = Main.distance;
+    		distanceText.setText(Double.toString(distance/Main.distUnits));
+    		Main.setStars(mass1, radius1, mass2, radius2, distance);
+    		return;}
+    }
+    
+    public void updateFieldUnits(){
+
+    	if(distMap.get(xPointsDistUnitsBox.getValue())!=Main.xDistUnits){
+    		xDist = xDist*distMap.get(xPointsDistUnitsBox.getValue())/Main.xDistUnits;
+    		Main.xDistUnits = distMap.get(xPointsDistUnitsBox.getValue());
+    		xPointsDistText.setText(Double.toString(xDist/Main.xDistUnits));
+    		Main.updateField(numXPoints, numYPoints, numZPoints, xDist, yDist, zDist);
+    		return;}
+    	
+    	if(distMap.get(yPointsDistUnitsBox.getValue())!=Main.yDistUnits){
+    		yDist = yDist*distMap.get(yPointsDistUnitsBox.getValue())/Main.yDistUnits;
+    		Main.yDistUnits = distMap.get(yPointsDistUnitsBox.getValue());
+    		yPointsDistText.setText(Double.toString(yDist/Main.yDistUnits));
+    		Main.updateField(numXPoints, numYPoints, numZPoints, xDist, yDist, zDist);
+    		return;}
+    	
+    	if(distMap.get(zPointsDistUnitsBox.getValue())!=Main.zDistUnits){
+    		zDist = zDist*distMap.get(zPointsDistUnitsBox.getValue())/Main.zDistUnits;
+    		Main.zDistUnits = distMap.get(zPointsDistUnitsBox.getValue());
+    		zPointsDistText.setText(Double.toString(zDist/Main.zDistUnits));
+    		Main.updateField(numXPoints, numYPoints, numZPoints, xDist, yDist, zDist);
+    		return;}
+    }
+    
+    public void toggleEqualStellarDensity(){
+    	
+    	Main.setStarDensityEquality(equalDensitiesChk.isSelected());
+    	radius2Text.setText(Double.toString(Main.radius2/Main.radius2Units));
+    	radius2 = Main.radius2;
+    	
+    }
+    
+}

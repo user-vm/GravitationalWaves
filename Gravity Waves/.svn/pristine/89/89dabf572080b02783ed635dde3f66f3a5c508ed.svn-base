@@ -1,0 +1,135 @@
+package com.GravityWaves.Main;
+
+import java.net.URL;
+import java.util.ResourceBundle;
+
+import javafx.fxml.*;
+import javafx.scene.control.*;
+
+public class Controller implements Initializable{
+	
+	int numXPoints = 9;
+	int numYPoints = 9;
+	int numZPoints = 1;
+	
+	@FXML
+	TextField mass1Text;
+	@FXML
+	ComboBox mass1UnitsBox;
+	@FXML
+	TextField radius1Text;
+	@FXML
+	ComboBox radius1UnitsBox;
+	@FXML
+	TextField mass2Text;
+	@FXML
+	ComboBox mass2UnitsBox;
+	@FXML
+	TextField radius2Text;
+	@FXML
+	ComboBox radius2UnitsBox;
+	@FXML
+	TextField distanceText;
+	@FXML
+	ComboBox distanceUnitsBox;
+	@FXML
+	CheckBox equalDensitiesChk;
+	@FXML
+	CheckBox showOrbitsChk;
+	@FXML
+	CheckBox showFieldChk;
+	@FXML
+	TextField numXPointsText;
+	@FXML
+	TextField numYPointsText;
+	@FXML
+	TextField numZPointsText;
+	@FXML
+	TextField xPointsDistText;
+	@FXML
+	TextField yPointsDistText;
+	@FXML
+	TextField zPointsDistText;
+	@FXML
+	TextField xPointsDistUnitsBox;
+	@FXML
+	TextField yPointsDistUnitsBox;
+	@FXML
+	TextField zPointsDistUnitsBox;
+	@FXML
+	TextField xAxisRotText;
+	@FXML
+	TextField yAxisRotText;
+	@FXML
+	TextField zAxisRotText;
+	@FXML
+	TextField xAxisRotUnitsBox;
+	@FXML
+	TextField yAxisRotUnitsBox;
+	@FXML
+	TextField zAxisRotUnitsBox;
+	
+	/**
+     * Initializes the controller class.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle rsrcs) {
+
+        assert mass1Text != null : "fx:id=\"mass1Text\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert mass1UnitsBox != null : "fx:id=\"mass1UnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert radius1Text != null : "fx:id=\"radius1Text\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert radius1UnitsBox != null : "fx:id=\"radius1UnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert mass2Text != null : "fx:id=\"mass2Text\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert mass2UnitsBox != null : "fx:id=\"mass2UnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert radius2Text != null : "fx:id=\"radius2Text\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert radius2UnitsBox != null : "fx:id=\"radius2UnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert distanceText != null : "fx:id=\"distanceText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert distanceUnitsBox != null : "fx:id=\"distanceUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert equalDensitiesChk != null : "fx:id=\"equalDensitiesChk\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert showOrbitsChk != null : "fx:id=\"showOrbitsChk\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        
+        assert showFieldChk != null : "fx:id=\"showFieldChk\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert numXPointsText != null : "fx:id=\"numXPointsText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert numYPointsText != null : "fx:id=\"numYPointsText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert numZPointsText != null : "fx:id=\"numZPointsText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert xPointsDistText != null : "fx:id=\"xPointsDistText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert yPointsDistText != null : "fx:id=\"yPointsDistText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert zPointsDistText != null : "fx:id=\"zPointsDistText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert xPointsDistUnitsBox != null : "fx:id=\"xPointsDistUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert yPointsDistUnitsBox != null : "fx:id=\"yPointsDistUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert zPointsDistUnitsBox != null : "fx:id=\"zPointsDistUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert xAxisRotText != null : "fx:id=\"xAxisRotText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert yAxisRotText != null : "fx:id=\"yAxisRotText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert zAxisRotText != null : "fx:id=\"zAxisRotText\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert xAxisRotUnitsBox != null : "fx:id=\"xAxisRotUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert yAxisRotUnitsBox != null : "fx:id=\"yAxisRotUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+        assert zAxisRotUnitsBox != null : "fx:id=\"zAxisRotUnitsBox\" was not injected: check your FXML file 'IssueTrackingLite.fxml'.";
+    }
+    
+    public void updatePoints(){
+    	
+    	try{
+    		int numXPointsNew, numYPointsNew, numZPointsNew;
+    		numXPointsNew = (int)(Double.parseDouble(numXPointsText.getText()));
+    		numYPointsNew = (int)(Double.parseDouble(numYPointsText.getText()));
+    		numZPointsNew = (int)(Double.parseDouble(numZPointsText.getText()));
+    		
+    		double xDist = Double.parseDouble(xPointsDistText.getText());
+    		double yDist = Double.parseDouble(yPointsDistText.getText());
+    		double zDist = Double.parseDouble(zPointsDistText.getText());
+    		
+    		numXPoints = numXPointsNew;
+    		numYPoints = numYPointsNew;
+    		numZPoints = numZPointsNew;
+    		
+    		Main.updateField(numXPoints,numYPoints,numZPoints,xDist,yDist,zDist);
+    	}catch(Exception E){
+    		System.out.printf("catch");
+    		numXPointsText.setText(Integer.toString(numXPoints));
+    		numYPointsText.setText(Integer.toString(numYPoints));
+    		numZPointsText.setText(Integer.toString(numZPoints));
+    	}
+    	
+    }
+    
+}

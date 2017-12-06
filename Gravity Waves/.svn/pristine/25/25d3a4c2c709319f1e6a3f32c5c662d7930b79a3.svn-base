@@ -1,0 +1,30 @@
+package com.GravityWaves.Main;
+
+import javafx.scene.Scene;
+import javafx.scene.shape.Sphere;
+
+public class View {
+
+	// Not to scale...
+	public static final int EARTH_RADIUS = 10;
+	public static final int SUN_RADIUS = 500;
+	
+	public Sphere earth;
+	public Sphere sun;
+	
+	public Scene scene;
+	
+	private View(Model model){
+		
+		earth = new Sphere(EARTH_RADIUS);
+		sun = new Sphere(SUN_RADIUS);
+		
+		earth.materialProperty().bind(model.materialProperty());
+		sun.materialProperty().bind(model.materialProperty());
+		
+		
+		
+	}
+	
+	
+}

@@ -1,0 +1,95 @@
+
+package com.GravityWaves.Main;
+
+import java.io.IOException;
+import java.net.URL;
+
+import javafx.application.Application;
+import javafx.event.EventHandler;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+
+public class Main extends Application {
+
+	/** 
+	 * The actual entry point for the application. The runtime creates an
+	 * instance of the Application class, which in turn calls start(). The
+	 * main() method is ignored in properly setup JavaFX applications.
+	 * 
+	 * @param Stage primaryStage
+	 */
+	@Override
+	public void start(Stage primaryStage) {
+
+		System.out.println("Using JavaFX Version: " + System.getProperties().get("javafx.runtime.version"));
+		
+		// Loads the fxml file which initialises the rest of the code
+		Scene rootScene = loadSceneFromFXML();
+				
+		// Tells the primary stage to use rootScene
+		primaryStage.setScene(rootScene);
+
+		// Sets up other window options
+		primaryStage.setResizable(true);
+		primaryStage.setMinWidth(550);
+		primaryStage.setMinHeight(300);
+		primaryStage.setWidth(850);
+		primaryStage.setHeight(500);
+		primaryStage.setTitle("Gravitational Waves");
+
+		// Shows the window
+		System.out.println("Showing stage...");
+		primaryStage.show();
+		
+		// Set any actions to be performed when the window is closed
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			
+			@Override
+			public void handle(WindowEvent event) {
+
+				System.out.println("Closing window...");
+				
+			}
+		
+		});
+
+	}
+
+	/**
+	 * Loads the scene from the fxml file.
+	 * 
+	 * @return The initialised scene object
+	 */
+	private Scene loadSceneFromFXML() {
+
+		Scene scene = null;
+
+		try {
+
+			URL location = getClass().getResource("/fxml/leftpane.fxml");
+			scene = new Scene(FXMLLoader.load(location));
+
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+			
+		}
+		
+		System.out.println("leftpane.fxml located & loaded correctly.");
+		return scene;
+
+	}
+
+	/**
+	 * The main() method is ignored in correctly deployed JavaFX applications.
+	 * main() serves only as fallback in case the application can not be
+	 * launched through deployment artifacts, e.g., in IDEs with limited FX
+	 * support.
+	 *
+	 * @param args the command line arguments
+	 */
+	public static void main(String[] args) { launch(args); }
+
+}

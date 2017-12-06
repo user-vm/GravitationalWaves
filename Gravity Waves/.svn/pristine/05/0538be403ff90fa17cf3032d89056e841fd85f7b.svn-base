@@ -1,0 +1,2446 @@
+
+package com.GravityWaves.Controller;
+
+import java.net.URL;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.animation.TimelineBuilder;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableFloatArray;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.geometry.Point3D;
+import javafx.scene.Group;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.PerspectiveCamera;
+import javafx.scene.SceneAntialiasing;
+import javafx.scene.SubScene;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.Image;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.PhongMaterial;
+import javafx.scene.shape.Box;
+import javafx.scene.shape.CullFace;
+import javafx.scene.shape.Cylinder;
+import javafx.scene.shape.DrawMode;
+import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Sphere;
+import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.Rotate;
+import javafx.scene.transform.Scale;
+import javafx.util.Duration;
+
+import com.GravityWaves.Util.ArrowBox;
+import com.GravityWaves.Util.ColormapMesh;
+import com.GravityWaves.Util.OrbitMesh;
+import com.GravityWaves.Util.Xform;
+
+
+@SuppressWarnings("deprecation")
+public class Controller implements Initializable {
+
+	// FXML imports
+
+	// The root pane of the fxml file
+	@FXML
+	BorderPane rootBorder;
+
+	// The parent pane for the tabs. Unused, but included for completeness.
+	@FXML
+	TabPane tabPane;
+
+	// Stars tab
+
+	@FXML
+	Tab tabStars;
+
+	@FXML
+	CheckBox useEqualDensities, showOrbits;
+	@FXML
+	ComboBox<String> star1MassUnits, star2MassUnits, star1RadiusUnits,
+			star2RadiusUnits, distanceUnits;
+	@FXML
+	TextField star1Mass, star2Mass, star1Radius, star2Radius, distanceText, systemScaleText;
+	@FXML
+	Button deduceScaleButton, lockScaleToCameraButton;
+
+	// Field tab
+
+	@FXML
+	Tab tabField;
+
+	@FXML
+	CheckBox showField, showColourBar;
+	@FXML
+	ComboBox<String> xSeparationUnits, ySeparationUnits, zSeparationUnits,
+			xAxisRotUnits, yAxisRotUnits, zAxisRotUnits;
+	@FXML
+	RadioButton arrowsField, colourMapField;
+	@FXML
+	TextField numXPointsBox, numYPointsBox, numZPointsBox, xSeparation,
+			ySeparation, zSeparation, xAxisRot, yAxisRot, zAxisRot;
+
+	// Group for the radio buttons. Unused, but included for completeness.
+	@FXML
+	ToggleGroup fieldTypeGroup;
+
+	// Camera tab
+
+	@FXML
+	Tab tabCamera;
+	@FXML
+	Button cameraReset, cameraPointAtZero;
+	@FXML
+	ComboBox<String> cameraDistanceUnits, cameraXAxisRotUnits, cameraYAxisRotUnits,
+			cameraXPivotUnits, cameraYPivotUnits, cameraZPivotUnits,
+			inputUnits;
+	@FXML
+	TextField cameraDistance, cameraXAxisRot, cameraYAxisRot, cameraXPivot,
+			cameraYPivot, cameraZPivot;
+
+	// Detector tab
+
+	@FXML
+	Tab tabDetector;
+
+	@FXML
+	Button detectorReset;
+	@FXML
+	CheckBox detectorShow;
+	@FXML
+	ComboBox<String> detectorXPosUnits, detectorYPosUnits, detectorZPosUnits,
+			arm1LengthUnitsBox, arm2LengthUnitsBox, arm1AngleUnitsBox,
+			arm2AngleUnitsBox, detectorXAxisRotUnits, detectorYAxisRotUnits,
+			detectorZAxisRotUnits;
+	@FXML
+	TextField scaleOverride, detectorXPos, detectorYPos, detectorZPos,
+			arm1LengthBox, arm2LengthBox, arm1AngleBox, arm2AngleBox,
+			detectorXAxisRot, detectorYAxisRot, detectorZAxisRot;
+
+	///
+	
+	int numXPoints = 10;
+	int numYPoints = 10;
+	int numZPoints = 4;
+
+	int cmapNumXPoints = 9;
+	int cmapNumYPoints = 9;
+	int cmapNumZPoints = 1;
+
+	double xDist = 9;
+	double yDist = 9;
+	double zDist = 9;
+
+	double cmapXDist = 9;
+	double cmapYDist = 9;
+	double cmapZDist = 9;
+
+	Map<String, Double> massMap = new HashMap<String, Double>();
+	Map<String, Double> distMap = new HashMap<String, Double>();
+	Map<String, Double> angleMap = new HashMap<String, Double>();
+
+	Map<Double, String> distInvMap = new HashMap<Double, String>();
+	Map<Double, String> angleInvMap = new HashMap<Double, String>();
+
+	// from Main
+
+	public Sphere testSphere;
+	public double mass1 = 1;
+	public Sphere testSphere2;
+	public double mass2 = 10;
+	public double distance = 20;
+	public double radius1 = 2.5, radius2 = radius1
+			* Math.pow(mass2 / mass1, 1.0 / 3);
+	public double systemScaleFactor = 1.0;
+	public double systemScaleLockVal = 0.1;
+	public Scale systemGroupScale;
+	public Group systemGroup;
+	public Boolean isScaledToCamera = false; 
+	public DecimalFormat smallNumberFormat = new DecimalFormat("0.0###");
+	public DecimalFormat bigNumberFormat = new DecimalFormat("0.0###E0");
+
+	public int angle = 0;
+	public double omega = Math.toRadians(250);
+	public MeshView orbitMesh = new MeshView(new OrbitMesh(distance * mass1
+			/ (mass1 + mass2)));
+	public MeshView orbitMesh2 = new MeshView(new OrbitMesh(distance * mass2
+			/ (mass1 + mass2)));
+	PerspectiveCamera camera;
+	final Xform cameraXform = new Xform();
+	final Xform cameraXform2 = new Xform();
+	final Xform cameraXform3 = new Xform();
+	double mousePosX;
+	double mousePosY;
+	double mouseOldX;
+	double mouseOldY;
+	double mouseDeltaX;
+	double mouseDeltaY;
+	double DELTA_MULTIPLIER = -200.0;
+	double CONTROL_MULTIPLIER = -0.1;
+	double SHIFT_MULTIPLIER = -0.1;
+	double ALT_MULTIPLIER = -0.5;
+	public Timeline timer = new Timeline();
+	boolean timelinePlaying = true;
+
+	Group stuffContainer;
+	Group arrowGroup;
+	public Rotate arrowGroupXRot, arrowGroupYRot, arrowGroupZRot;
+	public Rotate fieldColormapXRot, fieldColormapYRot, fieldColormapZRot;
+
+	final Xform world = new Xform();
+	ArrayList<ArrowBox> arrowBoxes = new ArrayList<ArrowBox>();
+	public PhongMaterial orbitMaterial;
+	public PhongMaterial cylinderMaterial;
+	StackPane stackPane;
+
+	public boolean isFieldVisible = true;
+	public boolean isStarDensityEqual = false;
+
+	public double M = 1E-3, KM = 1, AU = 149597871, LY = 9.4605284E+12,
+			PC = 3.08567758E+13;
+
+	public double KG = 1, T = 1E+3, SM = 1.9891E+30;
+
+	public double DEG = 1, RAD = 180 / Math.PI;
+	
+	public double G = 6.67384E-11 * Math.pow(M, 3);
+	public double LIGHTSPEED = 299792458*M;
+
+	public double mass1Units = KG;
+	public double mass2Units = KG;
+	public double radius1Units = KM;
+	public double radius2Units = KM;
+	public double distUnits = KM;
+
+	public double xDistUnits = KM;
+	public double yDistUnits = KM;
+	public double zDistUnits = KM;
+
+	public double cmapXDistUnits = KM;
+	public double cmapYDistUnits = KM;
+	public double cmapZDistUnits = KM;
+
+	public double xAngleUnits = DEG;
+	public double yAngleUnits = DEG;
+	public double zAngleUnits = DEG;
+
+	public double cmapXAngleUnits = DEG;
+	public double cmapYAngleUnits = DEG;
+	public double cmapZAngleUnits = DEG;
+
+	public double xFieldRot = 0;
+	public double yFieldRot = 0;
+	public double zFieldRot = 0;
+
+	public double cmapXFieldRot = 0;
+	public double cmapYFieldRot = 0;
+	public double cmapZFieldRot = 0;
+
+	public double distCameraUnits = KM;
+
+	public double xPivotUnits = KM;
+	public double yPivotUnits = KM;
+	public double zPivotUnits = KM;
+
+	public double xRotCameraUnits = DEG;
+	public double yRotCameraUnits = DEG;
+
+	public double distCamera;
+
+	public double xRotCameraVal;
+	public double yRotCameraVal;
+
+	public double xPivot = 0;
+	public double yPivot = 0;
+	public double zPivot = 0;
+
+	public double movePivotUnits = KM;
+
+	// detector
+	public double xDetector;
+	public double yDetector;
+	public double zDetector;
+
+	public double xRotDetector;
+	public double yRotDetector;
+	public double zRotDetector;
+
+	public double arm1Length;
+	public double arm1Angle;
+
+	public double arm2Length;
+	public double arm2Angle;
+
+	public double xDetectorUnits = KM;
+	public double yDetectorUnits = KM;
+	public double zDetectorUnits = KM;
+
+	public double xRotDetectorUnits = KM;
+	public double yRotDetectorUnits = KM;
+	public double zRotDetectorUnits = KM;
+
+	public final double DETECTOR_SIZE = 5;
+
+	Cylinder arm1Cylinder, arm2Cylinder;
+	Box detectorA, detectorB, detectorC;
+
+	public Rotate rot90;
+
+	public Rotate detectorBRotate;
+	public Rotate arm1CylinderRotate;
+	public Rotate detectorCRotate;
+	public Rotate arm2CylinderRotate;
+
+	public double arm1LengthUnits = KM;
+	public double arm2LengthUnits = KM;
+	public double arm1AngleUnits = DEG;
+	public double arm2AngleUnits = DEG;
+
+	public Group detectorGroup;
+	public Rotate detectorGroupRotX;
+	public Rotate detectorGroupRotY;
+	public Rotate detectorGroupRotZ;
+
+	public Scale detectorScale;
+	public double detectorScaleFactor;
+
+	public Group scene3DRoot;
+	public SubScene scene3D;
+
+	// colormap
+
+	public MeshView fieldColormap;
+
+	public Scale fieldColormapScale;
+	public Group colormapGroup;
+
+	Image colorGradient;
+
+	public PhongMaterial colormapMaterial;
+
+	public boolean isArrowsVisible = true;
+	
+	public void deduceScale(){
+		
+		systemScaleFactor = Math.atan(0.1) / Math.atan(distance/2/-distCamera);
+		
+		systemScaleText.setText(formatDouble(systemScaleFactor));
+		setStars();
+		
+	}
+	
+	public void lockScaleToCamera(){
+		
+		isScaledToCamera = !isScaledToCamera;
+		
+		if(isScaledToCamera)
+			lockScaleToCameraButton.setText("Unlock scale");
+		else
+			lockScaleToCameraButton.setText("Lock scale to camera");
+		
+		systemScaleLockVal = Math.atan(distance/2/-distCamera);
+	}
+
+	public void updateField() {
+
+		arrowGroupXRot.setAngle(xFieldRot);
+		arrowGroupYRot.setAngle(yFieldRot);
+		arrowGroupZRot.setAngle(zFieldRot);
+
+		ArrowBox currentArrow;
+		for (int i = 0; i < numZPoints; i++) {
+			for (int j = 0; j < numYPoints; j++) {
+				for (int k = 0; k < numXPoints; k++) {
+
+					if ((i * numYPoints + j) * numXPoints + k < arrowBoxes
+							.size()) {
+						currentArrow = arrowBoxes.get((i * numYPoints + j)
+								* numXPoints + k);
+						currentArrow.boxXform.setTranslate(xDist
+								* (k - ((numXPoints - 1) / 2.0)), yDist
+								* (j - ((numYPoints - 1) / 2.0)), zDist
+								* (i - ((numZPoints - 1) / 2.0)));
+
+						currentArrow.boxXform.setRz(Math.toDegrees(Math.atan2(
+								yDist * (j - ((numYPoints - 1) / 2.0)), xDist
+										* (k - ((numXPoints - 1) / 2.0)))));
+						currentArrow.boxXform
+								.setRy(Math.toDegrees(Math.atan(-zDist
+										* (i - ((numZPoints - 1) / 2.0))
+										/ Math.sqrt(Math
+												.pow(xDist
+														* (k - ((numXPoints - 1) / 2.0)),
+														2)
+												+ Math.pow(
+														yDist
+																* (j - ((numYPoints - 1) / 2.0)),
+														2)))));
+					} else {
+						currentArrow = new ArrowBox(xDist
+								* (k - ((numXPoints - 1) / 2.0)), yDist
+								* (j - ((numYPoints - 1) / 2.0)), zDist
+								* (i - ((numZPoints - 1) / 2.0)));
+
+						currentArrow.boxXform
+								.setRy(Math.toDegrees(Math.atan(-zDist
+										* (i - ((numZPoints - 1) / 2.0))
+										/ Math.sqrt(Math
+												.pow(xDist
+														* (k - ((numXPoints - 1) / 2.0)),
+														2)
+												+ Math.pow(
+														yDist
+																* (j - ((numYPoints - 1) / 2.0)),
+														2)))));
+						currentArrow.boxXform.setRz(Math.toDegrees(Math.atan2(
+								yDist * (j - ((numYPoints - 1) / 2.0)), xDist
+										* (k - ((numXPoints - 1) / 2.0)))));
+
+						currentArrow.box.setMaterial(orbitMaterial);
+
+						arrowGroup.getChildren().add(currentArrow.boxXform);
+						arrowBoxes.add(currentArrow);
+					}
+				}
+			}
+		}
+
+		int numPoints = numZPoints * numYPoints * numXPoints;
+		for (int i = numPoints; i < arrowBoxes.size();) {
+
+			arrowGroup.getChildren().remove(arrowBoxes.get(numPoints).boxXform);
+			arrowBoxes.remove(numPoints);
+		}
+	}
+
+	public void setOrbitsVisibility(boolean isVisible) {
+
+		orbitMesh.setVisible(isVisible);
+		orbitMesh2.setVisible(isVisible);
+	}
+
+	public void setFieldVisibility(boolean isVisible) {
+
+		isFieldVisible = isVisible;
+
+		if (arrowsField.isSelected())
+
+			arrowGroup.setVisible(isVisible);
+
+		else
+			fieldColormap.setVisible(isVisible);
+	}
+
+	public void updateFieldTexts() {
+
+		numXPointsBox.setText(Integer.toString(numXPoints));
+		numYPointsBox.setText(Integer.toString(numYPoints));
+		numZPointsBox.setText(Integer.toString(numZPoints));
+
+		xSeparation.setText(formatDouble(xDist / xDistUnits));
+		ySeparation.setText(formatDouble(yDist / yDistUnits));
+		zSeparation.setText(formatDouble(zDist / zDistUnits));
+
+		xAxisRot.setText(formatDouble(xFieldRot / xAngleUnits));
+		yAxisRot.setText(formatDouble(yFieldRot / yAngleUnits));
+		zAxisRot.setText(formatDouble(zFieldRot / zAngleUnits));
+
+		xSeparationUnits.setValue(distInvMap.get(xDistUnits));
+		ySeparationUnits.setValue(distInvMap.get(yDistUnits));
+		zSeparationUnits.setValue(distInvMap.get(zDistUnits));
+
+		xAxisRotUnits.setValue(angleInvMap.get(xAngleUnits));
+		yAxisRotUnits.setValue(angleInvMap.get(yAngleUnits));
+		zAxisRotUnits.setValue(angleInvMap.get(yAngleUnits));
+	}
+
+	public void updateColormapTexts() {
+
+		numXPointsBox.setText(Integer.toString(cmapNumXPoints));
+		numYPointsBox.setText(Integer.toString(cmapNumYPoints));
+		numZPointsBox.setText("1");
+
+		xSeparation.setText(formatDouble(cmapXDist / cmapXDistUnits));
+		ySeparation.setText(formatDouble(cmapYDist / cmapYDistUnits));
+		zSeparation.setText("0.0");
+
+		xAxisRot.setText(formatDouble(cmapXFieldRot / cmapXAngleUnits));
+		yAxisRot.setText(formatDouble(cmapYFieldRot / cmapYAngleUnits));
+		zAxisRot.setText(formatDouble(cmapZFieldRot / cmapZAngleUnits));
+
+		xSeparationUnits.setValue(distInvMap.get(cmapXDistUnits));
+		ySeparationUnits.setValue(distInvMap.get(cmapYDistUnits));
+		zSeparationUnits.setValue(distInvMap.get(cmapZDistUnits));
+
+		xAxisRotUnits.setValue(angleInvMap.get(cmapXAngleUnits));
+		yAxisRotUnits.setValue(angleInvMap.get(cmapYAngleUnits));
+		zAxisRotUnits.setValue(angleInvMap.get(cmapZAngleUnits));
+	}
+
+	public void toggleFieldType() {
+
+		boolean isVisible = arrowsField.isSelected();
+
+		if (isVisible == isArrowsVisible)
+			return;
+
+		isArrowsVisible = isVisible;
+
+		arrowGroup.setVisible(isVisible);
+		fieldColormap.setVisible(!isVisible);
+
+		if (isVisible) {
+			updateFieldTexts();
+			updateField();
+		} else {
+			updateColormapTexts();
+			updateColormap(true);
+		}
+
+		numZPointsBox.setDisable(!isVisible);
+		zSeparation.setDisable(!isVisible);
+		zSeparationUnits.setDisable(!isVisible);
+	}
+
+	public void setStarDensityEquality(boolean isEqual) {
+
+		isStarDensityEqual = isEqual;
+
+		if (isStarDensityEqual) {
+			radius2 = radius1 * Math.pow(mass2 / mass1, 1.0 / 3);
+			testSphere2.setRadius(radius2);
+		}
+	}
+
+	public void setStars() {
+
+		testSphere.setRadius(radius1);
+		testSphere2.setRadius(radius2);
+
+		systemGroup.getChildren().remove(orbitMesh);
+		systemGroup.getChildren().remove(orbitMesh2);
+
+		orbitMesh = new MeshView(new OrbitMesh(distance * mass1
+				/ (mass1 + mass2)));
+		orbitMesh2 = new MeshView(new OrbitMesh(distance * mass2
+				/ (mass1 + mass2)));
+
+		orbitMesh.setMaterial(orbitMaterial);
+		orbitMesh.setDrawMode(DrawMode.LINE);
+
+		orbitMesh2.setMaterial(orbitMaterial);
+		orbitMesh2.setDrawMode(DrawMode.LINE);
+		
+		toggleShowOrbits();
+
+		systemGroup.getChildren().add(orbitMesh);
+		systemGroup.getChildren().add(orbitMesh2);
+		
+		systemGroupScale.setX(systemScaleFactor);
+		systemGroupScale.setY(systemScaleFactor);
+		systemGroupScale.setZ(systemScaleFactor);
+		
+		omega = Math.toRadians(250);
+		//omega = Math.sqrt(G*(mass1+mass2)/Math.pow(distance,3));
+
+	}
+	
+	public void setScale(){
+		
+		if(!isScaledToCamera)
+			return;
+		
+		systemScaleFactor = Math.atan(systemScaleLockVal)
+				/ Math.atan(distance/2/-distCamera);
+
+		systemScaleText.setText(formatDouble(systemScaleFactor));
+		systemGroupScale.setX(systemScaleFactor);
+		systemGroupScale.setY(systemScaleFactor);
+		systemGroupScale.setZ(systemScaleFactor);
+	}
+	
+	public void setCamera() {
+
+		cameraXform.t.setX(xPivot);
+		cameraXform.t.setY(yPivot);
+		cameraXform.t.setZ(zPivot);
+		camera.setTranslateZ(distCamera);
+		
+		setScale();
+
+		cameraXform.setRx(xRotCameraVal);
+		cameraXform.setRy(yRotCameraVal);
+	}
+
+	public void xFormToVar() {
+
+		xPivot = cameraXform.t.getX();
+		yPivot = cameraXform.t.getY();
+		zPivot = cameraXform.t.getZ();
+
+		distCamera = camera.getTranslateZ();
+
+		xRotCameraVal = cameraXform.rx.getAngle();
+		yRotCameraVal = cameraXform.ry.getAngle();
+	}
+
+	public void resetCamera() {
+
+		camera.setTranslateZ(-100);
+		cameraXform.ry.setAngle(0);
+		cameraXform.rx.setAngle(0);
+		cameraXform.rz.setAngle(0);
+		cameraXform.setTx(0);
+		cameraXform.setTy(0);
+		cameraXform.setTz(0);
+
+		xFormToVar();
+		setCameraTextFields();
+		setScale();
+	}
+
+	public void pointCameraAtZero() {
+		cameraXform.setTx(0);
+		cameraXform.setTy(0);
+		cameraXform.setTz(0);
+
+		xPivot = 0;
+		yPivot = 0;
+		zPivot = 0;
+
+		cameraXPivot.setText("0.0");
+		cameraYPivot.setText("0.0");
+		cameraZPivot.setText("0.0");
+	}
+	
+	public String formatDouble(double number){
+		
+		if(Math.abs(number)<10000)
+			return smallNumberFormat.format(number);
+		
+		return bigNumberFormat.format(number);
+	}
+
+	public void setCameraTextFields() {
+
+		cameraDistance.setText(formatDouble(-distCamera / distCameraUnits));
+
+		cameraXPivot.setText(formatDouble(xPivot / xPivotUnits));
+		cameraYPivot.setText(formatDouble(yPivot / yPivotUnits));
+		cameraZPivot.setText(formatDouble(zPivot / zPivotUnits));
+
+		cameraXAxisRot
+				.setText(formatDouble(xRotCameraVal / xRotCameraUnits));
+		cameraYAxisRot
+				.setText(formatDouble(yRotCameraVal / yRotCameraUnits));
+	}
+
+	public void setDetector() {
+
+		detectorScale.setX(detectorScaleFactor);
+		detectorScale.setY(detectorScaleFactor);
+		detectorScale.setZ(detectorScaleFactor);
+
+		detectorGroup.setTranslateX(xDetector);
+		detectorGroup.setTranslateY(yDetector);
+		detectorGroup.setTranslateZ(zDetector);
+
+		detectorGroupRotX.setAngle(xRotDetector);
+		detectorGroupRotY.setAngle(yRotDetector);
+		detectorGroupRotZ.setAngle(zRotDetector);
+
+		detectorB.setTranslateX(arm1Length);
+		detectorBRotate.setPivotX(-arm1Length);
+		detectorBRotate.setAngle(arm1Angle);
+
+		arm1Cylinder.setTranslateX(arm1Length / 2);
+		arm1Cylinder.setHeight(arm1Length);
+		arm1CylinderRotate.setPivotX(-arm1Length / 2);
+		arm1CylinderRotate.setAngle(arm1Angle);
+
+		detectorC.setTranslateX(arm2Length);
+		detectorCRotate.setPivotX(-arm2Length);
+		detectorCRotate.setAngle(arm2Angle);
+
+		arm2Cylinder.setTranslateX(arm2Length / 2);
+		arm2Cylinder.setHeight(arm2Length);
+		arm2CylinderRotate.setPivotX(-arm2Length / 2);
+		arm2CylinderRotate.setAngle(arm2Angle);
+	}
+
+	public void setDetectorTextFields() {
+
+		scaleOverride.setText(formatDouble(detectorScaleFactor));
+
+		detectorXPos.setText(formatDouble(xDetector / xDetectorUnits));
+		detectorYPos.setText(formatDouble(yDetector / yDetectorUnits));
+		detectorZPos.setText(formatDouble(zDetector / zDetectorUnits));
+
+		detectorXAxisRot.setText(formatDouble(xRotDetector
+				/ xRotDetectorUnits));
+		detectorYAxisRot.setText(formatDouble(yRotDetector
+				/ yRotDetectorUnits));
+		detectorZAxisRot.setText(formatDouble(zRotDetector
+				/ zRotDetectorUnits));
+
+		arm1LengthBox.setText(formatDouble(arm1Length / arm1LengthUnits));
+		arm1AngleBox.setText(formatDouble(arm1Angle / arm1AngleUnits));
+
+		arm2LengthBox.setText(formatDouble(arm2Length / arm2LengthUnits));
+		arm2AngleBox.setText(formatDouble(arm2Angle / arm2AngleUnits));
+	}
+
+	private void handleMouse(SubScene scene, final Node root) {
+		scene.setOnMousePressed(new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent me) {
+				updateCamera();
+				mousePosX = me.getSceneX();
+				mousePosY = me.getSceneY();
+				mouseOldX = me.getSceneX();
+				mouseOldY = me.getSceneY();
+				scene3D.requestFocus();
+			}
+		});
+		scene.setOnMouseDragged(new EventHandler<MouseEvent>() {
+
+			@Override
+			public void handle(MouseEvent me) {
+				mouseOldX = mousePosX;
+				mouseOldY = mousePosY;
+				mousePosX = me.getSceneX();
+				mousePosY = me.getSceneY();
+				mouseDeltaX = -(mousePosX - mouseOldX);
+				mouseDeltaY = -(mousePosY - mouseOldY);
+
+				double modifier = 1.0;
+				double modifierFactor = 0.1;
+
+				if (me.isControlDown()) {
+					modifier = 0.1;
+				}
+				if (me.isShiftDown()) {
+					modifier = 10.0;
+				}
+				if (me.isPrimaryButtonDown()) {
+					cameraXform.ry.setAngle(cameraXform.ry.getAngle()
+							- mouseDeltaX * modifierFactor * modifier * 2.0); // +
+					cameraXform.rx.setAngle(cameraXform.rx.getAngle()
+							+ mouseDeltaY * modifierFactor * modifier * 2.0); // -
+				} else if (me.isSecondaryButtonDown()) {
+					double z = camera.getTranslateZ();
+					double newZ = z + mouseDeltaX * modifierFactor
+							* movePivotUnits * modifier;
+					camera.setTranslateZ(newZ);
+				} else if (me.isMiddleButtonDown()) {
+					cameraXform.t.setX(cameraXform.t.getX()
+							+ cameraXform3.localToScene(
+									new Point3D(mouseDeltaX * modifierFactor
+											* modifier * movePivotUnits * 0.3,
+											0, 0)).getX()
+							- cameraXform3.localToScene(new Point3D(0, 0, 0))
+									.getX());
+					cameraXform.t.setY(cameraXform.t.getY()
+							+ cameraXform3.localToScene(
+									new Point3D(mouseDeltaX * modifierFactor
+											* modifier * movePivotUnits * 0.3,
+											0, 0)).getY()
+							- cameraXform3.localToScene(new Point3D(0, 0, 0))
+									.getY());
+					cameraXform.t.setZ(cameraXform.t.getZ()
+							+ cameraXform3.localToScene(
+									new Point3D(mouseDeltaX * modifierFactor
+											* modifier * movePivotUnits * 0.3,
+											0, 0)).getZ()
+							- cameraXform3.localToScene(new Point3D(0, 0, 0))
+									.getZ());
+
+					cameraXform.t.setX(cameraXform.t.getX()
+							+ cameraXform3.localToScene(
+									new Point3D(0, mouseDeltaY * modifierFactor
+											* modifier * movePivotUnits * 0.3,
+											0)).getX()
+							- cameraXform3.localToScene(new Point3D(0, 0, 0))
+									.getX());
+					cameraXform.t.setY(cameraXform.t.getY()
+							+ cameraXform3.localToScene(
+									new Point3D(0, mouseDeltaY * modifierFactor
+											* modifier * movePivotUnits * 0.3,
+											0)).getY()
+							- cameraXform3.localToScene(new Point3D(0, 0, 0))
+									.getY());
+					cameraXform.t.setZ(cameraXform.t.getZ()
+							+ cameraXform3.localToScene(
+									new Point3D(0, mouseDeltaY * modifierFactor
+											* modifier * movePivotUnits * 0.3,
+											0)).getZ()
+							- cameraXform3.localToScene(new Point3D(0, 0, 0))
+									.getZ());
+				}
+				xFormToVar();
+				setCameraTextFields();
+				setScale();
+			}
+		});
+	}
+
+	private void handleKeyboard(SubScene scene, final Node root1) {
+		scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent event) {
+				double ctrlMult1 = CONTROL_MULTIPLIER;
+				CONTROL_MULTIPLIER *= movePivotUnits;
+				switch (event.getCode()) {
+				case Z:
+					if (event.isShiftDown()) {
+						cameraXform.ry.setAngle(0.0);
+						cameraXform.rx.setAngle(0.0);
+						camera.setTranslateZ(-100.0);
+					}
+					cameraXform2.t.setX(0.0);
+					cameraXform2.t.setY(0.0);
+					xFormToVar();
+					setCameraTextFields();
+					break;
+				case SPACE:
+					if (timelinePlaying) {
+						timer.pause();
+						timelinePlaying = false;
+					} else {
+						timer.play();
+						timelinePlaying = true;
+					}
+					break;
+				case UP:
+					if (event.isControlDown() && event.isShiftDown()) {
+						cameraXform.t.setX(cameraXform.t.getX()
+								- cameraXform3.localToScene(
+										new Point3D(0,
+												10.0 * CONTROL_MULTIPLIER, 0))
+										.getX()
+								+ cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getX());
+						cameraXform.t.setY(cameraXform.t.getY()
+								- cameraXform3.localToScene(
+										new Point3D(0,
+												10.0 * CONTROL_MULTIPLIER, 0))
+										.getY()
+								+ cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getY());
+						cameraXform.t.setZ(cameraXform.t.getZ()
+								- cameraXform3.localToScene(
+										new Point3D(0,
+												10.0 * CONTROL_MULTIPLIER, 0))
+										.getZ()
+								+ cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getZ());
+					} else if (event.isAltDown() && event.isShiftDown()) {
+						cameraXform.rx.setAngle(cameraXform.rx.getAngle()
+								- 10.0 * ALT_MULTIPLIER);
+					} else if (event.isControlDown()) {
+						cameraXform.t.setX(cameraXform.t.getX()
+								- cameraXform3.localToScene(
+										new Point3D(0,
+												1.0 * CONTROL_MULTIPLIER, 0))
+										.getX()
+								+ cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getX());
+						cameraXform.t.setY(cameraXform.t.getY()
+								- cameraXform3.localToScene(
+										new Point3D(0,
+												1.0 * CONTROL_MULTIPLIER, 0))
+										.getY()
+								+ cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getY());
+						cameraXform.t.setZ(cameraXform.t.getZ()
+								- cameraXform3.localToScene(
+										new Point3D(0,
+												1.0 * CONTROL_MULTIPLIER, 0))
+										.getZ()
+								+ cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getZ());
+					} else if (event.isAltDown()) {
+						cameraXform.rx.setAngle(cameraXform.rx.getAngle() - 2.0
+								* ALT_MULTIPLIER);
+					} else if (event.isShiftDown()) {
+						double z = camera.getTranslateZ();
+						double newZ = z + 5.0 * SHIFT_MULTIPLIER;
+						camera.setTranslateZ(newZ);
+					}
+					xFormToVar();
+					setCameraTextFields();
+					break;
+				case DOWN:
+					if (event.isControlDown() && event.isShiftDown()) {
+						cameraXform.t.setX(cameraXform.t.getX()
+								+ cameraXform3.localToScene(
+										new Point3D(0,
+												10.0 * CONTROL_MULTIPLIER, 0))
+										.getX()
+								- cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getX());
+						cameraXform.t.setY(cameraXform.t.getY()
+								+ cameraXform3.localToScene(
+										new Point3D(0,
+												10.0 * CONTROL_MULTIPLIER, 0))
+										.getY()
+								- cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getY());
+						cameraXform.t.setZ(cameraXform.t.getZ()
+								+ cameraXform3.localToScene(
+										new Point3D(0,
+												10.0 * CONTROL_MULTIPLIER, 0))
+										.getZ()
+								- cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getZ());
+					} else if (event.isAltDown() && event.isShiftDown()) {
+						cameraXform.rx.setAngle(cameraXform.rx.getAngle()
+								+ 10.0 * ALT_MULTIPLIER);
+					} else if (event.isControlDown()) {
+						cameraXform.t.setX(cameraXform.t.getX()
+								+ cameraXform3.localToScene(
+										new Point3D(0,
+												1.0 * CONTROL_MULTIPLIER, 0))
+										.getX()
+								- cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getX());
+						cameraXform.t.setY(cameraXform.t.getY()
+								+ cameraXform3.localToScene(
+										new Point3D(0,
+												1.0 * CONTROL_MULTIPLIER, 0))
+										.getY()
+								- cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getY());
+						cameraXform.t.setZ(cameraXform.t.getZ()
+								+ cameraXform3.localToScene(
+										new Point3D(0,
+												1.0 * CONTROL_MULTIPLIER, 0))
+										.getZ()
+								- cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getZ());
+					} else if (event.isAltDown()) {
+						cameraXform.rx.setAngle(cameraXform.rx.getAngle() + 2.0
+								* ALT_MULTIPLIER);
+					} else if (event.isShiftDown()) {
+						double z = camera.getTranslateZ();
+						double newZ = z - 5.0 * SHIFT_MULTIPLIER;
+						camera.setTranslateZ(newZ);
+					}
+					xFormToVar();
+					setCameraTextFields();
+					break;
+				case RIGHT:
+					if (event.isControlDown() && event.isShiftDown()) {
+						cameraXform.t.setX(cameraXform.t.getX()
+								+ cameraXform3.localToScene(
+										new Point3D(10.0 * CONTROL_MULTIPLIER,
+												0, 0)).getX()
+								- cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getX());
+						cameraXform.t.setY(cameraXform.t.getY()
+								+ cameraXform3.localToScene(
+										new Point3D(10.0 * CONTROL_MULTIPLIER,
+												0, 0)).getY()
+								- cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getY());
+						cameraXform.t.setZ(cameraXform.t.getZ()
+								+ cameraXform3.localToScene(
+										new Point3D(10.0 * CONTROL_MULTIPLIER,
+												0, 0)).getZ()
+								- cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getZ());
+					} else if (event.isAltDown() && event.isShiftDown()) {
+						cameraXform.ry.setAngle(cameraXform.ry.getAngle()
+								- 10.0 * ALT_MULTIPLIER);
+					} else if (event.isControlDown()) {
+						cameraXform.t.setX(cameraXform.t.getX()
+								+ cameraXform3.localToScene(
+										new Point3D(1.0 * CONTROL_MULTIPLIER,
+												0, 0)).getX()
+								- cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getX());
+						cameraXform.t.setY(cameraXform.t.getY()
+								+ cameraXform3.localToScene(
+										new Point3D(1.0 * CONTROL_MULTIPLIER,
+												0, 0)).getY()
+								- cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getY());
+						cameraXform.t.setZ(cameraXform.t.getZ()
+								+ cameraXform3.localToScene(
+										new Point3D(1.0 * CONTROL_MULTIPLIER,
+												0, 0)).getZ()
+								- cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getZ());
+					} else if (event.isAltDown()) {
+						cameraXform.ry.setAngle(cameraXform.ry.getAngle() - 2.0
+								* ALT_MULTIPLIER);
+					}
+					xFormToVar();
+					setCameraTextFields();
+					break;
+				case LEFT:
+					if (event.isControlDown() && event.isShiftDown()) {
+						cameraXform.t.setX(cameraXform.t.getX()
+								- cameraXform3.localToScene(
+										new Point3D(10.0 * CONTROL_MULTIPLIER,
+												0, 0)).getX()
+								+ cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getX());
+						cameraXform.t.setY(cameraXform.t.getY()
+								- cameraXform3.localToScene(
+										new Point3D(10.0 * CONTROL_MULTIPLIER,
+												0, 0)).getY()
+								+ cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getY());
+						cameraXform.t.setZ(cameraXform.t.getZ()
+								- cameraXform3.localToScene(
+										new Point3D(10.0 * CONTROL_MULTIPLIER,
+												0, 0)).getZ()
+								+ cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getZ());
+					} else if (event.isAltDown() && event.isShiftDown()) {
+						cameraXform.ry.setAngle(cameraXform.ry.getAngle()
+								+ 10.0 * ALT_MULTIPLIER); // -
+					} else if (event.isControlDown()) {
+						cameraXform.t.setX(cameraXform.t.getX()
+								- cameraXform3.localToScene(
+										new Point3D(1.0 * CONTROL_MULTIPLIER,
+												0, 0)).getX()
+								+ cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getX());
+						cameraXform.t.setY(cameraXform.t.getY()
+								- cameraXform3.localToScene(
+										new Point3D(1.0 * CONTROL_MULTIPLIER,
+												0, 0)).getY()
+								+ cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getY());
+						cameraXform.t.setZ(cameraXform.t.getZ()
+								- cameraXform3.localToScene(
+										new Point3D(1.0 * CONTROL_MULTIPLIER,
+												0, 0)).getZ()
+								+ cameraXform3.localToScene(
+										new Point3D(0, 0, 0)).getZ());
+					} else if (event.isAltDown()) {
+						cameraXform.ry.setAngle(cameraXform.ry.getAngle() + 2.0
+								* ALT_MULTIPLIER); // -
+					}
+					xFormToVar();
+					setCameraTextFields();
+					break;
+				default:
+					break;
+				}
+				
+				setScale();
+				CONTROL_MULTIPLIER = ctrlMult1;
+			}
+		});
+	}
+
+	public Parent createContent() {
+
+		// Create and position camera
+		camera = new PerspectiveCamera(true);
+
+		// Build the Scene Graph
+		scene3DRoot = new Group();
+		stuffContainer = new Group();
+		arrowGroup = new Group();
+
+		arrowGroupXRot = new Rotate();
+		arrowGroupXRot.setAxis(Rotate.X_AXIS);
+
+		arrowGroupYRot = new Rotate();
+		arrowGroupYRot.setAxis(Rotate.Y_AXIS);
+
+		arrowGroupZRot = new Rotate();
+		arrowGroupXRot.setAxis(Rotate.Z_AXIS);
+
+		arrowGroup.getTransforms().addAll(arrowGroupXRot, arrowGroupYRot,
+				arrowGroupZRot);
+
+		buildCamera();
+		scene3DRoot.getChildren().add(world);
+		world.getChildren().add(stuffContainer);
+		
+		systemGroupScale = new Scale();
+		systemGroup = new Group();
+		
+		stuffContainer.getChildren().add(systemGroup);
+		systemGroup.getTransforms().add(systemGroupScale);
+		
+		systemGroup.getChildren().add(testSphere);
+		systemGroup.getChildren().add(testSphere2);
+		systemGroup.getChildren().add(orbitMesh);
+		systemGroup.getChildren().add(orbitMesh2);
+		
+		for (int i = 0; i < 9; i++)
+			for (int j = 0; j < 9; j++) {
+				arrowBoxes.add(new ArrowBox(9 * (i - 4), 9 * (j - 4), 0));
+				arrowBoxes.get(i * 9 + j).boxXform.setRz(Math.toDegrees(Math
+						.atan2(j - 4, i - 4)));
+				arrowBoxes.get(i * 9 + j).box.setMaterial(orbitMaterial);
+				arrowGroup.getChildren()
+						.add(arrowBoxes.get(i * 9 + j).boxXform);
+			}
+
+		stuffContainer.getChildren().add(arrowGroup);
+		orbitMesh.setCullFace(CullFace.NONE);
+
+		// detector shape initialisation
+		detectorScaleFactor = 1;
+		arm1Length = 100;
+		arm2Length = 100;
+		arm1Angle = 0;
+		arm2Angle = 90;
+		xDetector = 20;
+		yDetector = 20;
+		zDetector = 0;
+		xRotDetector = 0;
+		yRotDetector = 0;
+		zRotDetector = 0;
+
+		detectorA = new Box(DETECTOR_SIZE, DETECTOR_SIZE, DETECTOR_SIZE);
+		detectorA.setMaterial(new PhongMaterial(Color.SILVER));
+
+		detectorB = new Box(DETECTOR_SIZE, DETECTOR_SIZE, DETECTOR_SIZE);
+		detectorB.setMaterial(new PhongMaterial(Color.SILVER));
+		detectorB.setTranslateX(arm1Length);
+		detectorBRotate = new Rotate();
+		detectorB.getTransforms().add(detectorBRotate);
+		detectorBRotate.setAxis(Rotate.Z_AXIS);
+		detectorBRotate.setPivotX(-arm1Length);
+
+		detectorC = new Box(DETECTOR_SIZE, DETECTOR_SIZE, DETECTOR_SIZE);
+		detectorC.setMaterial(new PhongMaterial(Color.SILVER));
+		detectorC.setTranslateX(arm2Length);
+		detectorCRotate = new Rotate();
+		detectorC.getTransforms().add(detectorCRotate);
+		detectorCRotate.setAxis(Rotate.Z_AXIS);
+		detectorCRotate.setPivotX(-arm2Length);
+
+		arm1Cylinder = new Cylinder(1, arm1Length, 4);
+		cylinderMaterial = new PhongMaterial(Color.RED);
+		cylinderMaterial.setSelfIlluminationMap(new Image("/img/red.png"));
+		arm1Cylinder.setMaterial(cylinderMaterial);
+
+		arm1Cylinder.setTranslateX(arm1Length / 2);
+		arm1CylinderRotate = new Rotate();
+		rot90 = new Rotate();
+		rot90.setAxis(Rotate.Z_AXIS);
+		rot90.setAngle(90);
+
+		arm1Cylinder.getTransforms().add(arm1CylinderRotate);
+		arm1Cylinder.getTransforms().add(rot90);
+		arm1CylinderRotate.setAxis(Rotate.Z_AXIS);
+		arm1CylinderRotate.setPivotX(-arm1Length / 2);
+
+		arm2Cylinder = new Cylinder(1, arm2Length, 4);
+		arm2Cylinder.setMaterial(cylinderMaterial);
+		arm2Cylinder.setTranslateX(arm2Length / 2);
+		arm2CylinderRotate = new Rotate();
+
+		arm2Cylinder.getTransforms().add(arm2CylinderRotate);
+		arm2Cylinder.getTransforms().add(rot90);
+		arm2CylinderRotate.setAxis(Rotate.Z_AXIS);
+		arm2CylinderRotate.setPivotX(-arm2Length / 2);
+
+		detectorGroup = new Group();
+
+		detectorGroup.getChildren().add(arm1Cylinder);
+		detectorGroup.getChildren().add(arm2Cylinder);
+		detectorGroup.getChildren().add(detectorA);
+		detectorGroup.getChildren().add(detectorB);
+		detectorGroup.getChildren().add(detectorC);
+
+		detectorGroupRotX = new Rotate();
+		detectorGroupRotX.setAxis(Rotate.X_AXIS);
+
+		detectorGroupRotY = new Rotate();
+		detectorGroupRotY.setAxis(Rotate.Y_AXIS);
+
+		detectorGroupRotZ = new Rotate();
+		detectorGroupRotZ.setAxis(Rotate.Z_AXIS);
+
+		detectorGroup.getTransforms().addAll(detectorGroupRotX,
+				detectorGroupRotY, detectorGroupRotZ);
+
+		detectorScale = new Scale();
+		detectorGroup.getTransforms().add(detectorScale);
+
+		setDetector();
+		setDetectorTextFields();
+
+		stuffContainer.getChildren().add(detectorGroup);
+
+		// colormap
+
+		fieldColormap = new MeshView(new ColormapMesh(9, 9));
+
+		fieldColormapScale = new Scale();
+		fieldColormapScale.setPivotX(0);
+		fieldColormapScale.setPivotY(0);
+		fieldColormapScale.setX(81);
+		fieldColormapScale.setY(81);
+
+		fieldColormapXRot = new Rotate();
+		fieldColormapXRot.setAxis(Rotate.X_AXIS);
+		fieldColormapYRot = new Rotate();
+		fieldColormapYRot.setAxis(Rotate.Y_AXIS);
+		fieldColormapZRot = new Rotate();
+		fieldColormapZRot.setAxis(Rotate.Z_AXIS);
+
+		colorGradient = new Image("/img/colormap.png");
+		colormapMaterial = new PhongMaterial(Color.RED, colorGradient, null,
+				null, null);
+		colormapMaterial.setSelfIlluminationMap(new Image("/img/colormap.png"));
+		fieldColormap.setMaterial(colormapMaterial);
+		fieldColormap.setCullFace(CullFace.NONE);
+
+		fieldColormap.getTransforms().addAll(fieldColormapXRot,
+				fieldColormapYRot, fieldColormapZRot);
+		fieldColormap.getTransforms().add(fieldColormapScale);
+
+		fieldColormap.setVisible(false);
+
+		stuffContainer.getChildren().add(fieldColormap);
+
+		return scene3DRoot;
+	}
+
+	public void updateSphere(double x, double y) {
+
+		testSphere.setTranslateX(x * (distance * mass2 / (mass1 + mass2)));
+		testSphere.setTranslateY(y * (distance * mass2 / (mass1 + mass2)));
+		testSphere2.setTranslateX(-x * (distance * mass1 / (mass1 + mass2)));
+		testSphere2.setTranslateY(-y * (distance * mass1 / (mass1 + mass2)));
+	}
+
+	public void updateColorField(int systemAngle) {
+
+		ObservableFloatArray texCoords = ((TriangleMesh) (fieldColormap
+				.getMesh())).getTexCoords();
+
+		for (int i = 0; i < texCoords.size(); i++) {
+			texCoords.set(i, (float) ((systemAngle / 360.0 + (float) (i)
+					/ texCoords.size()) % 1.0));
+			texCoords.set(i + 1, (float) 0.5);
+			i++;
+		}
+
+	}
+
+	public void updatePos() {
+		angle += Math.toDegrees(1/25.0 * omega);
+		angle %= 360;
+		if (isFieldVisible)
+			if (arrowsField.isSelected())
+				for (ArrowBox i : arrowBoxes)
+					i.scaleX(5 * (1 + Math.sin(Math.toRadians(angle))));
+			else
+				updateColorField(angle);
+
+		updateSphere((Math.cos(Math.toRadians(angle))),
+				((Math.sin(Math.toRadians(angle)))));
+	}
+
+	private void buildCamera() {
+		scene3DRoot.getChildren().add(cameraXform);
+		cameraXform.getChildren().add(cameraXform2);
+		cameraXform2.getChildren().add(cameraXform3);
+		cameraXform3.getChildren().add(camera);
+
+		camera.setNearClip(0.1);
+		camera.setFarClip(Double.MAX_VALUE);
+		camera.setTranslateZ(-100);
+		cameraXform.ry.setAngle(0);
+		cameraXform.rx.setAngle(0);
+
+		xFormToVar();
+		setCameraTextFields();
+	}
+
+	// from Controller
+
+	private final ChangeListener<Boolean> starFocusListener = new ChangeListener<Boolean>() {
+
+		@Override
+		public void changed(ObservableValue<? extends Boolean> observable,
+				Boolean oldValue, Boolean newValue) {
+			if (newValue == false)
+				updateStars();
+		}
+	};
+
+	private final ChangeListener<Boolean> fieldFocusListener = new ChangeListener<Boolean>() {
+
+		@Override
+		public void changed(ObservableValue<? extends Boolean> observable,
+				Boolean oldValue, Boolean newValue) {
+			if (newValue == false)
+				updatePoints();
+		}
+	};
+
+	private final ChangeListener<String> starUnitListener = new ChangeListener<String>() {
+
+		@Override
+		public void changed(ObservableValue<? extends String> observable,
+				String oldValue, String newValue) {
+			updateStarUnits();
+		}
+	};
+
+	private final ChangeListener<String> fieldUnitListener = new ChangeListener<String>() {
+
+		@Override
+		public void changed(ObservableValue<? extends String> observable,
+				String oldValue, String newValue) {
+			updateFieldUnits();
+		}
+	};
+
+	private final ChangeListener<Boolean> cameraFocusListener = new ChangeListener<Boolean>() {
+
+		@Override
+		public void changed(ObservableValue<? extends Boolean> observable,
+				Boolean oldValue, Boolean newValue) {
+			if (newValue == false)
+				updateCamera();
+		}
+	};
+
+	private final ChangeListener<String> cameraUnitListener = new ChangeListener<String>() {
+
+		@Override
+		public void changed(ObservableValue<? extends String> observable,
+				String oldValue, String newValue) {
+			updateCameraUnits();
+		}
+	};
+
+	private final ChangeListener<Boolean> detectorFocusListener = new ChangeListener<Boolean>() {
+
+		@Override
+		public void changed(ObservableValue<? extends Boolean> observable,
+				Boolean oldValue, Boolean newValue) {
+			if (newValue == false)
+				updateDetector();
+		}
+	};
+
+	private final ChangeListener<String> detectorUnitListener = new ChangeListener<String>() {
+
+		@Override
+		public void changed(ObservableValue<? extends String> observable,
+				String oldValue, String newValue) {
+			updateDetectorUnits();
+		}
+	};
+
+	private final ChangeListener<String> movePivotUnitListener = new ChangeListener<String>() {
+
+		@Override
+		public void changed(ObservableValue<? extends String> observable,
+				String oldValue, String newValue) {
+			updateMovePivotUnits();
+		}
+	};
+
+	/**
+	 * Initializes the controller class.
+	 */
+
+	@Override
+	public void initialize(URL url, ResourceBundle rsrcs) {
+
+		assertFXMLTagsInjected();
+
+		star1Mass.setText(formatDouble(mass1));
+		star1Mass.focusedProperty().addListener(starFocusListener);
+
+		star2Mass.setText(formatDouble(mass2));
+		star2Mass.focusedProperty().addListener(starFocusListener);
+
+		star1Radius.setText(formatDouble(radius1));
+		star1Radius.focusedProperty().addListener(starFocusListener);
+
+		star2Radius.setText(formatDouble(radius2));
+		star2Radius.focusedProperty().addListener(starFocusListener);
+		
+		systemScaleText.setText(formatDouble(systemScaleFactor));
+		systemScaleText.focusedProperty().addListener(starFocusListener);
+
+		numXPointsBox.focusedProperty().addListener(fieldFocusListener);
+		numYPointsBox.focusedProperty().addListener(fieldFocusListener);
+		numZPointsBox.focusedProperty().addListener(fieldFocusListener);
+
+		xSeparation.focusedProperty().addListener(fieldFocusListener);
+		ySeparation.focusedProperty().addListener(fieldFocusListener);
+		zSeparation.focusedProperty().addListener(fieldFocusListener);
+
+		xAxisRot.setText(formatDouble(xFieldRot));
+		yAxisRot.setText(formatDouble(yFieldRot));
+		zAxisRot.setText(formatDouble(zFieldRot));
+
+		xAxisRot.focusedProperty().addListener(fieldFocusListener);
+		yAxisRot.focusedProperty().addListener(fieldFocusListener);
+		zAxisRot.focusedProperty().addListener(fieldFocusListener);
+
+		star1RadiusUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		star1RadiusUnits.setValue("km");
+		star1RadiusUnits.valueProperty().addListener(starUnitListener);
+
+		star2RadiusUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		star2RadiusUnits.setValue("km");
+		star2RadiusUnits.valueProperty().addListener(starUnitListener);
+
+		star1MassUnits.getItems().addAll("kg", "t", "M☉");
+		star1MassUnits.setValue("kg");
+		star1MassUnits.valueProperty().addListener(starUnitListener);
+
+		star2MassUnits.getItems().addAll("kg", "t", "M☉");
+		star2MassUnits.setValue("kg");
+		star2MassUnits.valueProperty().addListener(starUnitListener);
+
+		xSeparationUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		xSeparationUnits.setValue("km");
+		xSeparationUnits.valueProperty().addListener(fieldUnitListener);
+
+		ySeparationUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		ySeparationUnits.setValue("km");
+		ySeparationUnits.valueProperty().addListener(fieldUnitListener);
+
+		zSeparationUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		zSeparationUnits.setValue("km");
+		zSeparationUnits.valueProperty().addListener(fieldUnitListener);
+
+		xAxisRotUnits.getItems().addAll("°", "rad");
+		xAxisRotUnits.setValue("°");
+		xAxisRotUnits.valueProperty().addListener(fieldUnitListener);
+
+		yAxisRotUnits.getItems().addAll("°", "rad");
+		yAxisRotUnits.setValue("°");
+		yAxisRotUnits.valueProperty().addListener(fieldUnitListener);
+
+		zAxisRotUnits.getItems().addAll("°", "rad");
+		zAxisRotUnits.setValue("°");
+		zAxisRotUnits.valueProperty().addListener(fieldUnitListener);
+
+		distanceUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		distanceUnits.setValue("km");
+		distanceUnits.valueProperty().addListener(starUnitListener);
+
+		distanceText.setText(formatDouble(distance));
+
+		cameraDistance.focusedProperty().addListener(cameraFocusListener);
+
+		cameraXAxisRot.focusedProperty().addListener(cameraFocusListener);
+		cameraYAxisRot.focusedProperty().addListener(cameraFocusListener);
+
+		cameraXPivot.focusedProperty().addListener(cameraFocusListener);
+		cameraYPivot.focusedProperty().addListener(cameraFocusListener);
+		cameraZPivot.focusedProperty().addListener(cameraFocusListener);
+
+		distMap.put("m", M);
+		distMap.put("km", KM);
+		distMap.put("au", AU);
+		distMap.put("pc", PC);
+		distMap.put("ly", LY);
+
+		distInvMap.put(M, "m");
+		distInvMap.put(KM, "km");
+		distInvMap.put(AU, "au");
+		distInvMap.put(PC, "pc");
+		distInvMap.put(LY, "ly");
+
+		massMap.put("kg", KG);
+		massMap.put("t", T);
+		massMap.put("M☉", SM);
+
+		angleMap.put("°", DEG);
+		angleMap.put("rad", RAD);
+
+		angleInvMap.put(DEG, "°");
+		angleInvMap.put(RAD, "rad");
+
+		cameraDistanceUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		cameraDistanceUnits.setValue("km");
+		cameraDistanceUnits.valueProperty().addListener(cameraUnitListener);
+
+		cameraXPivotUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		cameraXPivotUnits.setValue("km");
+		cameraXPivotUnits.valueProperty().addListener(cameraUnitListener);
+
+		cameraYPivotUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		cameraYPivotUnits.setValue("km");
+		cameraYPivotUnits.valueProperty().addListener(cameraUnitListener);
+
+		cameraZPivotUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		cameraZPivotUnits.setValue("km");
+		cameraZPivotUnits.valueProperty().addListener(cameraUnitListener);
+
+		cameraXAxisRotUnits.getItems().addAll("°", "rad");
+		cameraXAxisRotUnits.setValue("°");
+		cameraXAxisRotUnits.valueProperty().addListener(cameraUnitListener);
+
+		cameraYAxisRotUnits.getItems().addAll("°", "rad");
+		cameraYAxisRotUnits.setValue("°");
+		cameraYAxisRotUnits.valueProperty().addListener(cameraUnitListener);
+
+		inputUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		inputUnits.setValue("km");
+		inputUnits.valueProperty().addListener(movePivotUnitListener);
+
+		// detector
+
+		detectorXPos.setText(formatDouble(xDetector));
+		detectorXPos.focusedProperty().addListener(detectorFocusListener);
+
+		detectorYPos.setText(formatDouble(yDetector));
+		detectorYPos.focusedProperty().addListener(detectorFocusListener);
+
+		detectorZPos.setText(formatDouble(zDetector));
+		detectorZPos.focusedProperty().addListener(detectorFocusListener);
+
+		arm1LengthBox.setText(formatDouble(arm1Length));
+		arm1LengthBox.focusedProperty().addListener(detectorFocusListener);
+
+		arm1AngleBox.setText(formatDouble(arm1Angle));
+		arm1AngleBox.focusedProperty().addListener(detectorFocusListener);
+
+		arm2LengthBox.setText(formatDouble(arm2Length));
+		arm2LengthBox.focusedProperty().addListener(detectorFocusListener);
+
+		arm2AngleBox.setText(formatDouble(arm2Angle));
+		arm2AngleBox.focusedProperty().addListener(detectorFocusListener);
+
+		detectorXAxisRot.setText(formatDouble(xRotDetector));
+		detectorXAxisRot.focusedProperty().addListener(detectorFocusListener);
+
+		detectorYAxisRot.setText(formatDouble(xRotDetector));
+		detectorYAxisRot.focusedProperty().addListener(detectorFocusListener);
+
+		detectorZAxisRot.setText(formatDouble(xRotDetector));
+		detectorZAxisRot.focusedProperty().addListener(detectorFocusListener);
+
+		detectorXPosUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		detectorXPosUnits.setValue("km");
+		detectorXPosUnits.valueProperty().addListener(detectorUnitListener);
+
+		detectorYPosUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		detectorYPosUnits.setValue("km");
+		detectorYPosUnits.valueProperty().addListener(detectorUnitListener);
+
+		detectorZPosUnits.getItems().addAll("m", "km", "au", "ly", "pc");
+		detectorZPosUnits.setValue("km");
+		detectorZPosUnits.valueProperty().addListener(detectorUnitListener);
+
+		arm1LengthUnitsBox.getItems().addAll("m", "km", "au", "ly", "pc");
+		arm1LengthUnitsBox.setValue("km");
+		arm1LengthUnitsBox.valueProperty().addListener(detectorUnitListener);
+
+		arm1AngleUnitsBox.getItems().addAll("°", "rad");
+		arm1AngleUnitsBox.setValue("°");
+		arm1AngleUnitsBox.valueProperty().addListener(detectorUnitListener);
+
+		arm2LengthUnitsBox.getItems().addAll("m", "km", "au", "ly", "pc");
+		arm2LengthUnitsBox.setValue("km");
+		arm2LengthUnitsBox.valueProperty().addListener(detectorUnitListener);
+
+		arm2AngleUnitsBox.getItems().addAll("°", "rad");
+		arm2AngleUnitsBox.setValue("°");
+		arm2AngleUnitsBox.valueProperty().addListener(detectorUnitListener);
+
+		detectorXAxisRotUnits.getItems().addAll("°", "rad");
+		detectorXAxisRotUnits.setValue("°");
+		detectorXAxisRotUnits.valueProperty().addListener(detectorUnitListener);
+
+		detectorYAxisRotUnits.getItems().addAll("°", "rad");
+		detectorYAxisRotUnits.setValue("°");
+		detectorYAxisRotUnits.valueProperty().addListener(detectorUnitListener);
+
+		detectorZAxisRotUnits.getItems().addAll("°", "rad");
+		detectorZAxisRotUnits.setValue("°");
+		detectorZAxisRotUnits.valueProperty().addListener(detectorUnitListener);
+
+		// stuff originally in Main
+
+		// sphere
+		testSphere = new Sphere(radius1);
+		testSphere.setMaterial(new PhongMaterial(Color.RED));
+		testSphere.setDrawMode(DrawMode.FILL);
+
+		testSphere2 = new Sphere(radius2);
+		testSphere2.setMaterial(new PhongMaterial(Color.RED));
+		testSphere2.setDrawMode(DrawMode.FILL);
+
+		orbitMaterial = new PhongMaterial(Color.GREEN);
+		orbitMaterial.setSelfIlluminationMap(new Image("/img/green.png"));
+		orbitMesh.setMaterial(orbitMaterial);
+		orbitMesh.setDrawMode(DrawMode.LINE);
+
+		orbitMesh2.setMaterial(orbitMaterial);
+		orbitMesh2.setDrawMode(DrawMode.LINE);
+
+		scene3D = new SubScene(createContent(), 600, 500, true,
+				SceneAntialiasing.BALANCED);
+		stackPane = new StackPane();
+		stackPane.setPrefSize(600, 500);
+		stackPane.getChildren().add(scene3D);
+		scene3D.heightProperty().bind(stackPane.heightProperty());
+		scene3D.widthProperty().bind(stackPane.widthProperty());
+		stackPane.setMinSize(400, 400);
+
+		rootBorder.setCenter(stackPane);
+
+		scene3D.setFill(Color.BLACK);
+
+		scene3D.setCamera(camera);
+
+		final Duration oneFrameAmt = Duration.seconds(0.04);
+		final KeyFrame oneFrame = new KeyFrame(oneFrameAmt,
+				new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent evt) {
+						updatePos();
+					}
+				});
+
+		timer = TimelineBuilder.create().cycleCount(-1).keyFrames(oneFrame)
+				.build();
+		timer.playFromStart();
+		handleKeyboard(scene3D, world);
+		handleMouse(scene3D, world);
+
+	}
+
+	private void assertFXMLTagsInjected() {
+
+		// Assert all FXML Objects have been injected.
+
+		assert detectorYAxisRotUnits != null : "fx:id=\"detectorYAxisRotUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorXAxisRotUnits != null : "fx:id=\"detectorXAxisRotUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorXPos != null : "fx:id=\"detectorXPos\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert star1RadiusUnits != null : "fx:id=\"star1RadiusUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert xSeparation != null : "fx:id=\"xSeparation\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert tabDetector != null : "fx:id=\"tabDetector\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert arm2AngleUnitsBox != null : "fx:id=\"arm2AngleUnitsBox\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert tabStars != null : "fx:id=\"tabStars\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert scaleOverride != null : "fx:id=\"scaleOverride\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert arm2LengthUnitsBox != null : "fx:id=\"arm2LengthUnitsBox\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert yAxisRot != null : "fx:id=\"yAxisRot\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorYPosUnits != null : "fx:id=\"detectorYPosUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert xAxisRot != null : "fx:id=\"xAxisRot\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert zAxisRot != null : "fx:id=\"zAxisRot\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorZAxisRotUnits != null : "fx:id=\"detectorZAxisRotUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraXPivotUnits != null : "fx:id=\"cameraXPivotUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert ySeparation != null : "fx:id=\"ySeparation\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraZPivot != null : "fx:id=\"cameraZPivot\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorYPos != null : "fx:id=\"detectorYPos\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert xSeparationUnits != null : "fx:id=\"xSeparationUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert arm2AngleBox != null : "fx:id=\"arm2AngleBox\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert numXPointsBox != null : "fx:id=\"numXPointsBox\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraXAxisRot != null : "fx:id=\"cameraXAxisRot\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert arm1LengthBox != null : "fx:id=\"arm1LengthBox\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert arm2LengthBox != null : "fx:id=\"arm2LengthBox\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert star1Radius != null : "fx:id=\"star1Radius\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert colourMapField != null : "fx:id=\"colourMapField\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert numYPointsBox != null : "fx:id=\"numYPointsBox\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert star2RadiusUnits != null : "fx:id=\"star2RadiusUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert showColourBar != null : "fx:id=\"showColourBar\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert ySeparationUnits != null : "fx:id=\"ySeparationUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert arm1AngleUnitsBox != null : "fx:id=\"arm1AngleUnitsBox\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraPointAtZero != null : "fx:id=\"cameraPointAtZero\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraDistanceUnits != null : "fx:id=\"cameraDistanceUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert useEqualDensities != null : "fx:id=\"useEqualDensities\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorZAxisRot != null : "fx:id=\"detectorZAxisRot\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorYAxisRot != null : "fx:id=\"detectorYAxisRot\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert zSeparation != null : "fx:id=\"zSeparation\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert star2Mass != null : "fx:id=\"star2Mass\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraYPivotUnits != null : "fx:id=\"cameraYPivotUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorXAxisRot != null : "fx:id=\"detectorXAxisRot\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorShow != null : "fx:id=\"detectorShow\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraYAxisRotUnits != null : "fx:id=\"cameraYAxisRotUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorZPos != null : "fx:id=\"detectorZPos\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorReset != null : "fx:id=\"detectorReset\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraXPivot != null : "fx:id=\"cameraXPivot\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraXAxisRotUnits != null : "fx:id=\"cameraXAxisRotUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraDistance != null : "fx:id=\"cameraDistance\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert tabCamera != null : "fx:id=\"tabCamera\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert star1Mass != null : "fx:id=\"star1Mass\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert zSeparationUnits != null : "fx:id=\"zSeparationUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert inputUnits != null : "fx:id=\"inputUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert yAxisRotUnits != null : "fx:id=\"yAxisRotUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraReset != null : "fx:id=\"cameraReset\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraYPivot != null : "fx:id=\"cameraYPivot\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorZPosUnits != null : "fx:id=\"detectorZPosUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert star1MassUnits != null : "fx:id=\"star1MassUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert showField != null : "fx:id=\"showField\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert arrowsField != null : "fx:id=\"arrowsField\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert zAxisRotUnits != null : "fx:id=\"zAxisRotUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert distanceText != null : "fx:id=\"distanceText\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert numZPointsBox != null : "fx:id=\"numZPointsBox\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert detectorXPosUnits != null : "fx:id=\"detectorXPosUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert arm1LengthUnitsBox != null : "fx:id=\"arm1LengthUnitsBox\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert rootBorder != null : "fx:id=\"rootBorder\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert star2MassUnits != null : "fx:id=\"star2MassUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraYAxisRot != null : "fx:id=\"cameraYAxisRot\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert cameraZPivotUnits != null : "fx:id=\"cameraZPivotUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert tabField != null : "fx:id=\"tabField\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert arm1AngleBox != null : "fx:id=\"arm1AngleBox\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert xAxisRotUnits != null : "fx:id=\"xAxisRotUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert star2Radius != null : "fx:id=\"star2Radius\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert showOrbits != null : "fx:id=\"showOrbits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert distanceUnits != null : "fx:id=\"distanceUnits\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert fieldTypeGroup != null : "fx:id=\"fieldTypeGroup\" was not injected: check your FXML file 'leftpane.fxml'.";
+		assert tabPane != null : "fx:id=\"tabPane\" was not injected: check your FXML file 'leftpane.fxml'.";
+
+		System.out.println("All FXML objects injected successfully.");
+
+	}
+
+	public void updatePoints() {
+
+		if (arrowsField.isSelected())
+			updateArrowPoints();
+		else
+			updateColormapField();
+	}
+
+	public void updateArrowPoints() {
+
+		try {
+			int numXPointsNew, numYPointsNew, numZPointsNew;
+			numXPointsNew = (int) (Double.parseDouble(numXPointsBox.getText()));
+			numYPointsNew = (int) (Double.parseDouble(numYPointsBox.getText()));
+			numZPointsNew = (int) (Double.parseDouble(numZPointsBox.getText()));
+
+			double xDistNew = Double.parseDouble(xSeparation.getText())
+					* xDistUnits;
+			double yDistNew = Double.parseDouble(ySeparation.getText())
+					* yDistUnits;
+			double zDistNew = Double.parseDouble(zSeparation.getText())
+					* zDistUnits;
+
+			double xFieldRotNew = Double.parseDouble(xAxisRot.getText())
+					* xAngleUnits;
+			double yFieldRotNew = Double.parseDouble(yAxisRot.getText())
+					* yAngleUnits;
+			double zFieldRotNew = Double.parseDouble(zAxisRot.getText())
+					* zAngleUnits;
+
+			if (numXPointsNew < 0 || numYPointsNew < 0 || numZPointsNew < 0
+					|| xDistNew < 0 || yDistNew < 0 || zDistNew < 0) {
+
+				numXPointsBox.setText(Integer.toString(numXPoints));
+				numYPointsBox.setText(Integer.toString(numYPoints));
+				numZPointsBox.setText(Integer.toString(numZPoints));
+
+				xSeparation.setText(formatDouble(xDist / xDistUnits));
+				ySeparation.setText(formatDouble(yDist / yDistUnits));
+				zSeparation.setText(formatDouble(zDist / zDistUnits));
+
+				return;
+			}
+
+			if (numXPoints != numXPointsNew || numYPoints != numYPointsNew
+					|| numZPoints != numZPointsNew || xDist != xDistNew
+					|| yDist != yDistNew || zDist != zDistNew
+					|| xFieldRotNew != xFieldRot || yFieldRotNew != yFieldRot
+					|| zFieldRotNew != zFieldRot) {
+
+				numXPoints = numXPointsNew;
+				numYPoints = numYPointsNew;
+				numZPoints = numZPointsNew;
+
+				xDist = xDistNew;
+				yDist = yDistNew;
+				zDist = zDistNew;
+
+				xFieldRot = xFieldRotNew;
+				yFieldRot = yFieldRotNew;
+				zFieldRot = zFieldRotNew;
+
+				updateField();
+			}
+
+		} catch (Exception E) {
+		}
+
+		numXPointsBox.setText(Integer.toString(numXPoints));
+		numYPointsBox.setText(Integer.toString(numYPoints));
+		numZPointsBox.setText(Integer.toString(numZPoints));
+
+		xSeparation.setText(formatDouble(xDist / xDistUnits));
+		ySeparation.setText(formatDouble(yDist / yDistUnits));
+		zSeparation.setText(formatDouble(zDist / zDistUnits));
+
+		xAxisRot.setText(formatDouble(xFieldRot / xAngleUnits));
+		yAxisRot.setText(formatDouble(yFieldRot / yAngleUnits));
+		zAxisRot.setText(formatDouble(zFieldRot / zAngleUnits));
+	}
+
+	public void toggleShowOrbits() {
+
+		setOrbitsVisibility(showOrbits.isSelected());
+	}
+
+	public void toggleShowField() {
+
+		setFieldVisibility(showField.isSelected());
+
+	}
+
+	public void toggleShowColorbar() {
+
+	}
+
+	public void updateStars() {
+
+		try {
+			double newMass1 = Double.parseDouble(star1Mass.getText())
+					* mass1Units;
+			double newMass2 = Double.parseDouble(star2Mass.getText())
+					* mass2Units;
+			double newRadius1 = Double.parseDouble(star1Radius.getText())
+					* radius1Units;
+			double newRadius2 = Double.parseDouble(star2Radius.getText())
+					* radius2Units;
+			double newDistance = Double.parseDouble(distanceText.getText())
+					* distUnits;
+			double newSystemScaleFactor = Double.parseDouble(systemScaleText.getText());
+
+			if (newMass1 < 0 || newMass2 < 0 || newRadius1 < 0
+					|| newRadius2 < 0 || newDistance < 0 || newSystemScaleFactor < 0) {
+
+				star1Mass.setText(formatDouble(mass1 / mass1Units));
+				star2Mass.setText(formatDouble(mass2 / mass2Units));
+				star1Radius.setText(formatDouble(radius1 / radius1Units));
+				star2Radius.setText(formatDouble(radius2 / radius2Units));
+				distanceText.setText(formatDouble(distance / distUnits));
+				systemScaleText.setText(formatDouble(systemScaleFactor));
+
+				return;
+			}
+
+			if (mass1 != newMass1 || mass2 != newMass2 || radius1 != newRadius1
+					|| radius2 != newRadius2 || distance != newDistance
+					|| systemScaleFactor != newSystemScaleFactor) {
+
+				distance = newDistance;
+				systemScaleFactor = newSystemScaleFactor;
+
+				if (isStarDensityEqual) {
+					if (radius1 != newRadius1 || mass1 != newMass1) {
+						mass2 = newMass2;
+						mass1 = newMass1;
+						radius1 = newRadius1;
+						radius2 = radius1 * Math.pow(mass2 / mass1, 1.0 / 3);
+					} else {
+						mass2 = newMass2;
+						mass1 = newMass1;
+						radius2 = newRadius2;
+						radius1 = radius2 * Math.pow(mass1 / mass2, 1.0 / 3);
+					}
+				} else {
+					mass2 = newMass2;
+					mass1 = newMass1;
+					radius2 = newRadius2;
+					radius1 = newRadius1;
+				}
+
+				setStars();
+			}
+
+			star1Mass.setText(formatDouble(mass1 / mass1Units));
+			star2Mass.setText(formatDouble(mass2 / mass2Units));
+			star1Radius.setText(formatDouble(radius1 / radius1Units));
+			star2Radius.setText(formatDouble(radius2 / radius2Units));
+			distanceText.setText(formatDouble(distance / distUnits));
+			systemScaleText.setText(formatDouble(systemScaleFactor));
+
+		} catch (Exception E) {
+		}
+
+		star1Mass.setText(formatDouble(mass1 / mass1Units));
+		star2Mass.setText(formatDouble(mass2 / mass2Units));
+		star1Radius.setText(formatDouble(radius1 / radius1Units));
+		star2Radius.setText(formatDouble(radius2 / radius2Units));
+		distanceText.setText(formatDouble(distance / distUnits));
+		systemScaleText.setText(formatDouble(systemScaleFactor));
+
+	}
+
+	public void updateStarUnits() {
+
+		if (massMap.get(star1MassUnits.getValue()) != mass1Units) {
+			mass1 = mass1 * massMap.get(star1MassUnits.getValue()) / mass1Units;
+			mass1Units = massMap.get(star1MassUnits.getValue());
+			setStars();
+			return;
+		}
+
+		if (massMap.get(star2MassUnits.getValue()) != mass2Units) {
+			mass2 = mass2 * massMap.get(star2MassUnits.getValue()) / mass2Units;
+			mass2Units = massMap.get(star2MassUnits.getValue());
+			setStars();
+			return;
+		}
+
+		if (distMap.get(star1RadiusUnits.getValue()) != radius1Units) {
+			radius1 = radius1 * distMap.get(star1RadiusUnits.getValue())
+					/ radius1Units;
+			radius1Units = distMap.get(star1RadiusUnits.getValue());
+			setStars();
+			return;
+		}
+
+		if (distMap.get(star2RadiusUnits.getValue()) != radius2Units) {
+			radius2 = radius2 * distMap.get(star2RadiusUnits.getValue())
+					/ radius2Units;
+			radius2Units = distMap.get(star2RadiusUnits.getValue());
+			setStars();
+			return;
+		}
+
+		if (distMap.get(distanceUnits.getValue()) != distUnits) {
+			distance = distance * distMap.get(distanceUnits.getValue())
+					/ distUnits;
+			distUnits = distMap.get(distanceUnits.getValue());
+			setStars();
+			return;
+		}
+	}
+
+	public void updateFieldUnits() {
+
+		if (arrowsField.isSelected())
+			updateArrowsUnits();
+		else
+			updateColormapUnits();
+	}
+
+	public void updateColormapUnits() {
+
+		if (distMap.get(xSeparationUnits.getValue()) != cmapXDistUnits) {
+			cmapXDist = cmapXDist * distMap.get(xSeparationUnits.getValue())
+					/ cmapXDistUnits;
+			cmapXDistUnits = distMap.get(xSeparationUnits.getValue());
+			updateColormap(true);
+			return;
+		}
+
+		if (distMap.get(ySeparationUnits.getValue()) != cmapYDistUnits) {
+			cmapYDist = cmapYDist * distMap.get(ySeparationUnits.getValue())
+					/ cmapYDistUnits;
+			cmapYDistUnits = distMap.get(ySeparationUnits.getValue());
+			updateColormap(true);
+			return;
+		}
+
+		if (distMap.get(zSeparationUnits.getValue()) != cmapZDistUnits) {
+			cmapZDist = cmapZDist * distMap.get(zSeparationUnits.getValue())
+					/ cmapZDistUnits;
+			cmapZDistUnits = distMap.get(zSeparationUnits.getValue());
+			updateColormap(true);
+			return;
+		}
+
+		if (angleMap.get(xAxisRotUnits.getValue()) != cmapXAngleUnits) {
+			cmapXFieldRot = cmapXFieldRot
+					* angleMap.get(xAxisRotUnits.getValue()) / cmapXAngleUnits;
+			cmapXAngleUnits = angleMap.get(xAxisRotUnits.getValue());
+			updateColormap(true);
+			return;
+		}
+
+		if (angleMap.get(yAxisRotUnits.getValue()) != cmapYAngleUnits) {
+			cmapYFieldRot = cmapYFieldRot
+					* angleMap.get(yAxisRotUnits.getValue()) / cmapYAngleUnits;
+			cmapYAngleUnits = angleMap.get(yAxisRotUnits.getValue());
+			updateColormap(true);
+			return;
+		}
+
+		if (angleMap.get(zAxisRotUnits.getValue()) != cmapZAngleUnits) {
+			cmapZFieldRot = cmapZFieldRot
+					* angleMap.get(zAxisRotUnits.getValue()) / cmapZAngleUnits;
+			cmapZAngleUnits = angleMap.get(zAxisRotUnits.getValue());
+			updateColormap(true);
+			return;
+		}
+	}
+
+	public void updateArrowsUnits() {
+
+		if (distMap.get(xSeparationUnits.getValue()) != xDistUnits) {
+			xDist = xDist * distMap.get(xSeparationUnits.getValue())
+					/ xDistUnits;
+			xDistUnits = distMap.get(xSeparationUnits.getValue());
+			updateField();
+			return;
+		}
+
+		if (distMap.get(ySeparationUnits.getValue()) != yDistUnits) {
+			yDist = yDist * distMap.get(ySeparationUnits.getValue())
+					/ yDistUnits;
+			yDistUnits = distMap.get(ySeparationUnits.getValue());
+			updateField();
+			return;
+		}
+
+		if (distMap.get(zSeparationUnits.getValue()) != zDistUnits) {
+			zDist = zDist * distMap.get(zSeparationUnits.getValue())
+					/ zDistUnits;
+			zDistUnits = distMap.get(zSeparationUnits.getValue());
+			updateField();
+			return;
+		}
+
+		if (angleMap.get(xAxisRotUnits.getValue()) != xAngleUnits) {
+			xFieldRot = xFieldRot * angleMap.get(xAxisRotUnits.getValue())
+					/ xAngleUnits;
+			xAngleUnits = angleMap.get(xAxisRotUnits.getValue());
+			updateField();
+			return;
+		}
+
+		if (angleMap.get(yAxisRotUnits.getValue()) != yAngleUnits) {
+			yFieldRot = yFieldRot * angleMap.get(yAxisRotUnits.getValue())
+					/ yAngleUnits;
+			yAngleUnits = angleMap.get(yAxisRotUnits.getValue());
+			updateField();
+			return;
+		}
+
+		if (angleMap.get(zAxisRotUnits.getValue()) != zAngleUnits) {
+			zFieldRot = zFieldRot * angleMap.get(zAxisRotUnits.getValue())
+					/ zAngleUnits;
+			zAngleUnits = angleMap.get(zAxisRotUnits.getValue());
+			updateField();
+			return;
+		}
+	}
+
+	public void toggleEqualStellarDensity() {
+
+		setStarDensityEquality(useEqualDensities.isSelected());
+		star2Radius.setText(formatDouble(radius2 / radius2Units));
+
+	}
+
+	public void updateColormap(boolean chgPoints) {
+
+		if (chgPoints) {
+			fieldColormap.setMesh(new ColormapMesh(cmapNumXPoints,
+					cmapNumYPoints));
+		}
+
+		fieldColormapScale.setX((cmapNumXPoints - 1) * cmapXDist);
+		fieldColormapScale.setY((cmapNumYPoints - 1) * cmapYDist);
+
+		fieldColormapXRot.setAngle(cmapXFieldRot);
+		fieldColormapYRot.setAngle(cmapYFieldRot);
+		fieldColormapZRot.setAngle(cmapZFieldRot);
+	}
+
+	public void updateColormapField() {
+
+		try {
+			int cmapNumXPointsNew, cmapNumYPointsNew;
+			cmapNumXPointsNew = (int) (Double.parseDouble(numXPointsBox
+					.getText()));
+			cmapNumYPointsNew = (int) (Double.parseDouble(numYPointsBox
+					.getText()));
+
+			double cmapXDistNew = Double.parseDouble(xSeparation.getText())
+					* cmapXDistUnits;
+			double cmapYDistNew = Double.parseDouble(ySeparation.getText())
+					* cmapYDistUnits;
+
+			double cmapXFieldRotNew = Double.parseDouble(xAxisRot.getText())
+					* cmapXAngleUnits;
+			double cmapYFieldRotNew = Double.parseDouble(yAxisRot.getText())
+					* cmapYAngleUnits;
+			double cmapZFieldRotNew = Double.parseDouble(zAxisRot.getText())
+					* cmapZAngleUnits;
+
+			if (cmapNumXPointsNew < 0 || cmapNumYPointsNew < 0
+					|| cmapXDistNew < 0 || cmapYDistNew < 0) {
+
+				numXPointsBox.setText(Integer.toString(cmapNumXPoints));
+				numYPointsBox.setText(Integer.toString(cmapNumYPoints));
+
+				xSeparation
+						.setText(formatDouble(cmapXDist / cmapXDistUnits));
+				ySeparation
+						.setText(formatDouble(cmapYDist / cmapYDistUnits));
+
+				return;
+			}
+
+			if (cmapNumXPoints != cmapNumXPointsNew
+					|| cmapNumYPoints != cmapNumYPointsNew) {
+
+				cmapNumXPoints = cmapNumXPointsNew;
+				cmapNumYPoints = cmapNumYPointsNew;
+				updateColormap(true);
+			} else
+
+			if (cmapXDist != cmapXDistNew || cmapYDist != cmapYDistNew
+					|| cmapXFieldRotNew != cmapXFieldRot
+					|| cmapYFieldRotNew != cmapYFieldRot
+					|| cmapZFieldRotNew != cmapZFieldRot) {
+
+				cmapXDist = cmapXDistNew;
+				cmapYDist = cmapYDistNew;
+
+				cmapXFieldRot = cmapXFieldRotNew;
+				cmapYFieldRot = cmapYFieldRotNew;
+				cmapZFieldRot = cmapZFieldRotNew;
+
+				updateColormap(false);
+			}
+
+		} catch (Exception E) {
+		}
+
+		numXPointsBox.setText(Integer.toString(cmapNumXPoints));
+		numYPointsBox.setText(Integer.toString(cmapNumYPoints));
+
+		xSeparation.setText(formatDouble(cmapXDist / cmapXDistUnits));
+		ySeparation.setText(formatDouble(cmapYDist / cmapYDistUnits));
+
+		xAxisRot.setText(formatDouble(cmapXFieldRot / cmapXAngleUnits));
+		yAxisRot.setText(formatDouble(cmapYFieldRot / cmapYAngleUnits));
+		zAxisRot.setText(formatDouble(cmapZFieldRot / cmapZAngleUnits));
+	}
+
+	public void updateCamera() {
+
+		try {
+			double distCameraNew = -Double
+					.parseDouble(cameraDistance.getText()) * distCameraUnits;
+
+			double xPivotNew = Double.parseDouble(cameraXPivot.getText())
+					* xPivotUnits;
+			double yPivotNew = Double.parseDouble(cameraYPivot.getText())
+					* yPivotUnits;
+			double zPivotNew = Double.parseDouble(cameraZPivot.getText())
+					* zPivotUnits;
+
+			double xRotCameraNew = Double.parseDouble(cameraXAxisRot.getText())
+					* xRotCameraUnits;
+			double yRotCameraNew = Double.parseDouble(cameraYAxisRot.getText())
+					* yRotCameraUnits;
+
+			if (distCameraNew > 0) {
+
+				setCameraTextFields();
+				return;
+			}
+
+			if (xPivotNew != xPivot || yPivotNew != yPivot
+					|| zPivotNew != zPivot || xRotCameraNew != xRotCameraVal
+					|| yRotCameraNew != yRotCameraVal
+					|| distCameraNew != distCamera) {
+
+				distCamera = distCameraNew;
+
+				xPivot = xPivotNew;
+				yPivot = yPivotNew;
+				zPivot = zPivotNew;
+
+				xRotCameraVal = xRotCameraNew % 360;
+				yRotCameraVal = yRotCameraNew % 360;
+
+				setCamera();
+			}
+
+			cameraDistance.setText(formatDouble(-distCamera
+					/ distCameraUnits));
+
+			cameraXPivot.setText(formatDouble(xPivot / xPivotUnits));
+			cameraYPivot.setText(formatDouble(yPivot / yPivotUnits));
+			cameraZPivot.setText(formatDouble(zPivot / zPivotUnits));
+
+			cameraXAxisRot.setText(formatDouble(xRotCameraVal
+					/ xRotCameraUnits));
+			cameraYAxisRot.setText(formatDouble(yRotCameraVal
+					/ yRotCameraUnits));
+
+		} catch (Exception E) {
+
+			setCameraTextFields();
+		}
+	}
+
+	public void updateCameraUnits() {
+
+		if (distMap.get(cameraDistanceUnits.getValue()) != distCameraUnits) {
+			distCamera = distCamera
+					* distMap.get(cameraDistanceUnits.getValue())
+					/ distCameraUnits;
+			distCameraUnits = distMap.get(cameraDistanceUnits.getValue());
+			setCamera();
+			return;
+		}
+
+		if (distMap.get(cameraXPivotUnits.getValue()) != xPivotUnits) {
+			xPivot = xPivot * distMap.get(cameraXPivotUnits.getValue())
+					/ xPivotUnits;
+			xPivotUnits = distMap.get(cameraXPivotUnits.getValue());
+			setCamera();
+			return;
+		}
+
+		if (distMap.get(cameraYPivotUnits.getValue()) != yPivotUnits) {
+			yPivot = yPivot * distMap.get(cameraYPivotUnits.getValue())
+					/ yPivotUnits;
+			yPivotUnits = distMap.get(cameraYPivotUnits.getValue());
+			setCamera();
+			return;
+		}
+
+		if (distMap.get(cameraZPivotUnits.getValue()) != zPivotUnits) {
+			zPivot = zPivot * distMap.get(cameraZPivotUnits.getValue())
+					/ zPivotUnits;
+			zPivotUnits = distMap.get(cameraZPivotUnits.getValue());
+			setCamera();
+			return;
+		}
+
+		if (angleMap.get(cameraXAxisRotUnits.getValue()) != xRotCameraUnits) {
+			xRotCameraVal = xRotCameraVal
+					* angleMap.get(cameraXAxisRotUnits.getValue())
+					/ xRotCameraUnits;
+			xRotCameraUnits = angleMap.get(cameraXAxisRotUnits.getValue());
+			setCamera();
+			return;
+		}
+
+		if (angleMap.get(cameraYAxisRotUnits.getValue()) != yRotCameraUnits) {
+			yRotCameraVal = yRotCameraVal
+					* angleMap.get(cameraYAxisRotUnits.getValue())
+					/ yRotCameraUnits;
+			yRotCameraUnits = angleMap.get(cameraYAxisRotUnits.getValue());
+			setCamera();
+			return;
+		}
+	}
+	
+	public double getAmplitude(double t, double x, double y){
+		//amplitude is returned in KM
+		
+		return -4/Math.sqrt(x*x+y*y) * G/Math.pow(LIGHTSPEED, 4)
+				* mass1*mass2/(mass1+mass2) * distance * distance * omega * omega
+				* Math.sin(2*omega*(t - Math.atan2(x,y)/Math.sqrt(x*x+y*y)
+				- Math.sqrt(x*x+y*y)/LIGHTSPEED));
+	}
+
+	public void updateDetector() {
+		try {
+			double detectorScaleFactorNew = Double.parseDouble(scaleOverride
+					.getText());
+			double xDetectorNew = Double.parseDouble(detectorXPos.getText())
+					* xDetectorUnits;
+			double yDetectorNew = Double.parseDouble(detectorYPos.getText())
+					* yDetectorUnits;
+			double zDetectorNew = Double.parseDouble(detectorZPos.getText())
+					* zDetectorUnits;
+			double arm1LengthNew = Double.parseDouble(arm1LengthBox.getText())
+					* arm1LengthUnits;
+			double arm2LengthNew = Double.parseDouble(arm2LengthBox.getText())
+					* arm2LengthUnits;
+
+			double xRotDetectorNew = Double.parseDouble(detectorXAxisRot
+					.getText()) * xRotDetectorUnits;
+			double yRotDetectorNew = Double.parseDouble(detectorYAxisRot
+					.getText()) * yRotDetectorUnits;
+			double zRotDetectorNew = Double.parseDouble(detectorZAxisRot
+					.getText()) * zRotDetectorUnits;
+			double arm1AngleNew = Double.parseDouble(arm1AngleBox.getText())
+					* arm1AngleUnits;
+			double arm2AngleNew = Double.parseDouble(arm2AngleBox.getText())
+					* arm2AngleUnits;
+
+			if (xDetectorNew != xDetector || yDetectorNew != yDetector
+					|| zDetectorNew != zDetector
+					|| xRotDetectorNew != xRotDetector
+					|| yRotDetectorNew != yRotDetector
+					|| zRotDetectorNew != zRotDetector
+					|| arm1LengthNew != arm1Length
+					|| arm2LengthNew != arm2Length || arm1AngleNew != arm1Angle
+					|| arm2AngleNew != arm2Angle
+					|| detectorScaleFactorNew != detectorScaleFactor) {
+
+				detectorScaleFactor = detectorScaleFactorNew;
+
+				xDetector = xDetectorNew;
+				yDetector = yDetectorNew;
+				zDetector = zDetectorNew;
+				arm1Length = arm1LengthNew;
+				arm2Length = arm2LengthNew;
+
+				xRotDetector = xRotDetectorNew;
+				yRotDetector = yRotDetectorNew;
+				zRotDetector = zRotDetectorNew;
+				arm1Angle = arm1AngleNew;
+				arm2Angle = arm2AngleNew;
+
+				setDetector();
+			}
+
+			setDetectorTextFields();
+
+		} catch (Exception E) {
+
+			setDetectorTextFields();
+		}
+	}
+
+	public void updateDetectorUnits() {
+
+		if (distMap.get(detectorXPosUnits.getValue()) != xDetectorUnits) {
+			xDetector = xDetector * distMap.get(detectorXPosUnits.getValue())
+					/ xDetectorUnits;
+			xDetectorUnits = distMap.get(detectorXPosUnits.getValue());
+			setDetector();
+			return;
+		}
+
+		if (distMap.get(detectorYPosUnits.getValue()) != yDetectorUnits) {
+			yDetector = yDetector * distMap.get(detectorYPosUnits.getValue())
+					/ yDetectorUnits;
+			yDetectorUnits = distMap.get(detectorYPosUnits.getValue());
+			setDetector();
+			return;
+		}
+
+		if (distMap.get(detectorZPosUnits.getValue()) != zDetectorUnits) {
+			zDetector = zDetector * distMap.get(detectorZPosUnits.getValue())
+					/ zDetectorUnits;
+			zDetectorUnits = distMap.get(detectorZPosUnits.getValue());
+			setDetector();
+			return;
+		}
+
+		if (angleMap.get(detectorXAxisRotUnits.getValue()) != xRotDetectorUnits) {
+			xRotDetector = xRotDetector
+					* angleMap.get(detectorXAxisRotUnits.getValue())
+					/ xRotDetectorUnits;
+			xRotDetectorUnits = angleMap.get(detectorXAxisRotUnits.getValue());
+			setDetector();
+			return;
+		}
+
+		if (angleMap.get(detectorYAxisRotUnits.getValue()) != yRotDetectorUnits) {
+			yRotDetector = yRotDetector
+					* angleMap.get(detectorYAxisRotUnits.getValue())
+					/ yRotDetectorUnits;
+			yRotDetectorUnits = angleMap.get(detectorYAxisRotUnits.getValue());
+			setDetector();
+			return;
+		}
+
+		if (angleMap.get(detectorZAxisRotUnits.getValue()) != zRotDetectorUnits) {
+			zRotDetector = zRotDetector
+					* angleMap.get(detectorZAxisRotUnits.getValue())
+					/ zRotDetectorUnits;
+			zRotDetectorUnits = angleMap.get(detectorZAxisRotUnits.getValue());
+			setDetector();
+			return;
+		}
+
+		if (distMap.get(arm1LengthUnitsBox.getValue()) != arm1LengthUnits) {
+			arm1Length = arm1Length
+					* distMap.get(arm1LengthUnitsBox.getValue())
+					/ arm1LengthUnits;
+			arm1LengthUnits = distMap.get(arm1LengthUnitsBox.getValue());
+			setDetector();
+			return;
+		}
+
+		if (angleMap.get(arm1AngleUnitsBox.getValue()) != arm1AngleUnits) {
+			arm1Angle = arm1Angle * angleMap.get(arm1AngleUnitsBox.getValue())
+					/ arm1AngleUnits;
+			arm1AngleUnits = angleMap.get(arm1AngleUnitsBox.getValue());
+			setDetector();
+			return;
+		}
+
+		if (distMap.get(arm2LengthUnitsBox.getValue()) != arm2LengthUnits) {
+			arm2Length = arm2Length
+					* distMap.get(arm2LengthUnitsBox.getValue())
+					/ arm2LengthUnits;
+			arm2LengthUnits = distMap.get(arm2LengthUnitsBox.getValue());
+			setDetector();
+			return;
+		}
+
+		if (angleMap.get(arm2AngleUnitsBox.getValue()) != arm2AngleUnits) {
+			arm2Angle = arm2Angle * angleMap.get(arm2AngleUnitsBox.getValue())
+					/ arm2AngleUnits;
+			arm2AngleUnits = angleMap.get(arm2AngleUnitsBox.getValue());
+			setDetector();
+			return;
+		}
+	}
+
+	public void updateMovePivotUnits() {
+
+		if (distMap.get(inputUnits.getValue()) != movePivotUnits) {
+			movePivotUnits = distMap.get(inputUnits.getValue());
+			return;
+		}
+	}
+
+	public void toggleShowDetector() {
+
+		if (detectorShow.isSelected())
+			detectorGroup.setVisible(true);
+		else
+			detectorGroup.setVisible(false);
+	}
+
+	public void resetDetector() {
+
+		arm1Length = 100;
+		arm2Length = 100;
+		arm1Angle = 0;
+		arm2Angle = 90;
+		xDetector = 20;
+		yDetector = 20;
+		zDetector = 0;
+		xRotDetector = 0;
+		yRotDetector = 0;
+		zRotDetector = 0;
+		detectorScaleFactor = 1;
+
+		setDetectorTextFields();
+		setDetector();
+	}
+
+}

@@ -1,0 +1,17 @@
+package com.GravityWaves.Main;
+
+
+
+public class Main {
+
+	public static void main(String[] args){
+		
+		System.out.println("Oscillating Balls...");
+		System.out.println("and gravity stuff.");
+		System.out.println("ba-ba-ba ba ba banna, ba-ba-ba ba ba banna, ba-ba-ba ba ba bannannaaaaaaaaaa, potatoe naaaaaa");
+		
+		
+		
+	}
+	
+}

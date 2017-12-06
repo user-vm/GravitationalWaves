@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="rootBorder" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="762.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.GravityWaves.Main.Controller">
+   <left>
+      <TabPane maxHeight="1.7976931348623157E308" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="262.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+         <tabs>
+            <Tab text="Stars">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="371.0" prefWidth="227.0">
+                     <children>
+                        <Label layoutX="14.0" layoutY="14.0" text="Star 1">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <Label layoutX="24.0" layoutY="45.0" text="Mass" />
+                        <TextField fx:id="mass1Text" layoutX="68.0" layoutY="42.0" onAction="#updateStars" onInputMethodTextChanged="#updateStars" prefHeight="25.0" prefWidth="115.0" />
+                        <Label layoutX="24.0" layoutY="76.0" text="Radius" />
+                        <TextField fx:id="radius1Text" layoutX="68.0" layoutY="72.0" onAction="#updateStars" onInputMethodTextChanged="#updateStars" prefHeight="25.0" prefWidth="115.0" />
+                        <TextField fx:id="radius2Text" layoutX="68.0" layoutY="172.0" onAction="#updateStars" onInputMethodTextChanged="#updateStars" prefHeight="25.0" prefWidth="114.0" />
+                        <Label layoutX="24.0" layoutY="175.0" text="Radius" />
+                        <TextField fx:id="mass2Text" layoutX="68.0" layoutY="142.0" onAction="#updateStars" onInputMethodTextChanged="#updateStars" prefHeight="25.0" prefWidth="114.0" />
+                        <Label layoutX="24.0" layoutY="145.0" text="Mass" />
+                        <Label layoutX="14.0" layoutY="114.0" text="Star 2">
+                           <font>
+                              <Font name="System Bold" size="13.0" />
+                           </font>
+                        </Label>
+                        <ComboBox fx:id="mass1UnitsBox" layoutX="186.0" layoutY="42.0" onInputMethodTextChanged="#updateStarUnits" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="radius1UnitsBox" layoutX="186.0" layoutY="72.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="mass2UnitsBox" layoutX="186.0" layoutY="142.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="radius2UnitsBox" layoutX="186.0" layoutY="172.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="distanceUnitsBox" layoutX="186.0" layoutY="222.0" prefHeight="25.0" prefWidth="65.0" />
+                        <Label layoutX="14.0" layoutY="225.0" text="Distance" />
+                        <TextField fx:id="distanceText" layoutX="68.0" layoutY="222.0" onAction="#updateStars" onInputMethodTextChanged="#updateStars" prefHeight="25.0" prefWidth="114.0" />
+                        <CheckBox fx:id="equalDensitiesChk" layoutX="24.0" layoutY="277.0" mnemonicParsing="false" onAction="#toggleEqualStellarDensity" onMouseClicked="#toggleEqualStellarDensity" text="Use equal stellar densities" />
+                        <CheckBox fx:id="showOrbitsChk" layoutX="24.0" layoutY="307.0" mnemonicParsing="false" onMouseClicked="#toggleShowOrbits" selected="true" text="Show orbits" />
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+            <Tab text="Field">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <CheckBox fx:id="showFieldChk" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#toggleShowField" onMouseClicked="#toggleShowField" selected="true" text="Show field" />
+                        <Label layoutX="14.0" layoutY="45.0" text="Number of x points" />
+                        <TextField fx:id="numXPointsText" layoutX="123.0" layoutY="41.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" text="9" />
+                        <TextField fx:id="numYPointsText" layoutX="123.0" layoutY="71.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" text="9" />
+                        <Label layoutX="14.0" layoutY="75.0" text="Number of y points" />
+                        <Label layoutX="14.0" layoutY="105.0" text="Number of z points" />
+                        <TextField fx:id="numZPointsText" layoutX="123.0" layoutY="101.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" text="1" />
+                        <TextField fx:id="zFieldRotText" layoutX="123.0" layoutY="321.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" />
+                        <Label layoutX="14.0" layoutY="325.0" text="Z axis rotation" />
+                        <Label layoutX="14.0" layoutY="295.0" text="Y axis rotation" />
+                        <TextField fx:id="yFieldRotText" layoutX="123.0" layoutY="291.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" />
+                        <TextField layoutX="123.0" layoutY="261.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" fx:id="xFieldRotText" />
+                        <Label layoutX="14.0" layoutY="265.0" text="X axis rotation" />
+                        <Label layoutX="14.0" layoutY="155.0" text="X points separation" />
+                        <TextField layoutX="123.0" layoutY="151.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" text="9" fx:id="xPointsDistText" />
+                        <TextField fx:id="yPointsDistText" layoutX="123.0" layoutY="181.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" text="9" />
+                        <Label layoutX="14.0" layoutY="185.0" text="Y points separation" />
+                        <Label layoutX="14.0" layoutY="215.0" text="Z points separation" />
+                        <TextField fx:id="zPointsDistText" layoutX="123.0" layoutY="211.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" text="9" />
+                        <ComboBox layoutX="186.0" layoutY="151.0" prefHeight="25.0" prefWidth="65.0" fx:id="xPointsDistUnitsBox" />
+                        <ComboBox fx:id="yPointsDistUnitsBox" layoutX="186.0" layoutY="181.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="zPointsDistUnitsBox" layoutX="186.0" layoutY="211.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox layoutX="186.0" layoutY="261.0" prefHeight="25.0" prefWidth="65.0" fx:id="xFieldRotUnitsBox" />
+                        <ComboBox fx:id="yFieldRotUnitsBox" layoutX="186.0" layoutY="291.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="zFieldRotUnitsBox" layoutX="186.0" layoutY="321.0" prefHeight="25.0" prefWidth="65.0" />
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+            <Tab text="Camera">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label layoutX="14.0" layoutY="60.0" text="X offset" />
+                        <TextField layoutX="100.0" layoutY="56.0" onAction="#updateCamera" onInputMethodTextChanged="#updateCamera" prefHeight="25.0" prefWidth="83.0" fx:id="xCamera" />
+                        <TextField fx:id="yCamera" layoutX="100.0" layoutY="86.0" onAction="#updateCamera" onInputMethodTextChanged="#updateCamera" prefHeight="25.0" prefWidth="83.0" />
+                        <Label layoutX="14.0" layoutY="90.0" text="Y offset" />
+                        <Label layoutX="14.0" layoutY="120.0" text="Distance" />
+                        <TextField fx:id="zCamera" layoutX="100.0" layoutY="116.0" onAction="#updateCamera" onInputMethodTextChanged="#updateCamera" prefHeight="25.0" prefWidth="83.0" />
+                        <Label layoutX="14.0" layoutY="170.0" text="X axis rotation" />
+                        <TextField layoutX="100.0" layoutY="166.0" onAction="#updateCamera" onInputMethodTextChanged="#updateCamera" prefHeight="25.0" prefWidth="83.0" fx:id="xRotCamera" />
+                        <TextField fx:id="yRotCamera" layoutX="100.0" layoutY="196.0" onAction="#updateCamera" onInputMethodTextChanged="#updateCamera" prefHeight="25.0" prefWidth="83.0" />
+                        <Label layoutX="14.0" layoutY="200.0" text="Y axis rotation" />
+                        <Label layoutX="14.0" layoutY="230.0" text="Z axis rotation" />
+                        <TextField fx:id="zRotCamera" layoutX="100.0" layoutY="226.0" onAction="#updateCamera" onInputMethodTextChanged="#updateCamera" prefHeight="25.0" prefWidth="83.0" />
+                        <ComboBox layoutX="186.0" layoutY="166.0" prefHeight="25.0" prefWidth="65.0" fx:id="xRotCameraUnitsBox" />
+                        <ComboBox fx:id="yRotCameraUnitsBox" layoutX="186.0" layoutY="196.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="zRotCameraUnitsBox" layoutX="186.0" layoutY="226.0" prefHeight="25.0" prefWidth="65.0" />
+                        <Button fx:id="resetCameraButton" layoutX="15.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#resetCamera" prefHeight="25.0" prefWidth="110.0" text="Reset camera" />
+                        <Button fx:id="pointCameraAtZeroButton" layoutX="137.0" layoutY="14.0" mnemonicParsing="false" onMouseClicked="#pointCameraAtZero" prefHeight="25.0" prefWidth="110.0" text="Point at system" />
+                        <ComboBox fx:id="zCameraUnitsBox" layoutX="186.0" layoutY="116.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="yCameraUnitsBox" layoutX="186.0" layoutY="86.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox layoutX="186.0" layoutY="56.0" prefHeight="25.0" prefWidth="65.0" fx:id="xCameraUnitsBox" />
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+            <Tab text="Detector">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label layoutX="14.0" layoutY="90.0" text="X position" />
+                        <Label layoutX="14.0" layoutY="120.0" text="Y position" />
+                        <Label layoutX="14.0" layoutY="150.0" text="Z position" />
+                        <TextField layoutX="95.0" layoutY="86.0" onAction="#updateDetector" onInputMethodTextChanged="#updateDetector" prefHeight="25.0" prefWidth="88.0" fx:id="xDetectorText" />
+                        <TextField fx:id="yDetectorText" layoutX="95.0" layoutY="116.0" onAction="#updateDetector" onInputMethodTextChanged="#updateDetector" prefHeight="25.0" prefWidth="88.0" />
+                        <TextField fx:id="zDetectorText" layoutX="95.0" layoutY="146.0" onAction="#updateDetector" onInputMethodTextChanged="#updateDetector" prefHeight="25.0" prefWidth="88.0" />
+                        <ComboBox layoutX="186.0" layoutY="86.0" prefHeight="25.0" prefWidth="65.0" fx:id="xDetectorUnitsBox" />
+                        <ComboBox fx:id="yDetectorUnitsBox" layoutX="186.0" layoutY="116.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="zDetectorUnitsBox" layoutX="186.0" layoutY="146.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="arm1AngleUnitsBox" layoutX="186.0" layoutY="216.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="arm1LengthUnitsBox" layoutX="186.0" layoutY="186.0" prefHeight="25.0" prefWidth="65.0" />
+                        <TextField fx:id="arm1AngleText" layoutX="95.0" layoutY="216.0" onAction="#updateDetector" onInputMethodTextChanged="#updateDetector" prefHeight="25.0" prefWidth="88.0" />
+                        <TextField fx:id="arm1LengthText" layoutX="95.0" layoutY="186.0" onAction="#updateDetector" onInputMethodTextChanged="#updateDetector" prefHeight="25.0" prefWidth="88.0" />
+                        <Label layoutX="14.0" layoutY="220.0" text="Arm 1 angle" />
+                        <Label layoutX="14.0" layoutY="190.0" text="Arm 1 length" />
+                        <Label layoutX="14.0" layoutY="260.0" text="Arm 2 length" />
+                        <Label layoutX="14.0" layoutY="290.0" text="Arm 2 angle" />
+                        <TextField fx:id="arm2LengthText" layoutX="95.0" layoutY="256.0" onAction="#updateDetector" onInputMethodTextChanged="#updateDetector" prefHeight="25.0" prefWidth="88.0" />
+                        <TextField fx:id="arm2AngleText" layoutX="95.0" layoutY="286.0" onAction="#updateDetector" onInputMethodTextChanged="#updateDetector" prefHeight="25.0" prefWidth="88.0" />
+                        <ComboBox fx:id="arm2LengthUnitsBox" layoutX="186.0" layoutY="256.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="arm2AngleUnitsBox" layoutX="186.0" layoutY="286.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="zRotDetectorUnitsBox" layoutX="186.0" layoutY="386.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox fx:id="yRotDetectorUnitsBox" layoutX="186.0" layoutY="356.0" prefHeight="25.0" prefWidth="65.0" />
+                        <ComboBox layoutX="186.0" layoutY="326.0" prefHeight="25.0" prefWidth="65.0" fx:id="xRotDetectorUnitsBox" />
+                        <TextField fx:id="zRotDetectorText" layoutX="95.0" layoutY="386.0" onAction="#updateDetector" onInputMethodTextChanged="#updateDetector" prefHeight="25.0" prefWidth="88.0" />
+                        <TextField fx:id="yRotDetectorText" layoutX="95.0" layoutY="356.0" onAction="#updateDetector" onInputMethodTextChanged="#updateDetector" prefHeight="25.0" prefWidth="88.0" />
+                        <TextField layoutX="95.0" layoutY="326.0" onAction="#updateDetector" onInputMethodTextChanged="#updateDetector" prefHeight="25.0" prefWidth="88.0" fx:id="xRotDetectorText" />
+                        <Label layoutX="14.0" layoutY="390.0" text="Z axis rotation" />
+                        <Label layoutX="14.0" layoutY="360.0" text="Y axis rotation" />
+                        <Label layoutX="14.0" layoutY="330.0" text="X axis rotation" />
+                        <TextField fx:id="detectorScaleFactorText" layoutX="134.0" layoutY="46.0" onAction="#updateDetector" onInputMethodTextChanged="#updateDetector" prefHeight="25.0" prefWidth="117.0" />
+                        <Label layoutX="14.0" layoutY="50.0" text="Scale override factor" />
+                        <CheckBox fx:id="showDetectorChk" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#toggleShowDetector" onMouseClicked="#toggleShowDetector" selected="true" text="Show detector" />
+                        <Button fx:id="resetDetectorButton" layoutX="199.0" layoutY="10.0" mnemonicParsing="false" onMouseClicked="#resetDetector" prefHeight="25.0" prefWidth="52.0" text="Reset" />
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
+         </tabs>
+      </TabPane>
+   </left>
+</BorderPane>

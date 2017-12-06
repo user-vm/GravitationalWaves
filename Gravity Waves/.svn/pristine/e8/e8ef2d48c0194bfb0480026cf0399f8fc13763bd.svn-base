@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="rootBorder" xmlns="http://javafx.com/javafx/8"
+	xmlns:fx="http://javafx.com/fxml/1" prefHeight="400.0" prefWidth="662.0"
+	fx:controller="com.GravityWaves.Detector.Controller" >
+	
+	<left>
+		<TabPane prefHeight="400.0" prefWidth="262.0"
+			tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+			<tabs>
+				<Tab text="Tab 1">
+					
+				</Tab>
+			</tabs>
+		</TabPane>
+	</left>
+	
+</BorderPane>

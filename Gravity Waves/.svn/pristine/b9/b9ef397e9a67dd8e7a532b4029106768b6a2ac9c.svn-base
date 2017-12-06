@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="262.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.GravityWaves.Main.Controller">
+   <tabs>
+      <Tab text="Stars">
+         <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="371.0" prefWidth="227.0">
+               <children>
+                  <Label layoutX="14.0" layoutY="14.0" text="Star 1">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <Label layoutX="24.0" layoutY="45.0" text="Mass" />
+                  <TextField fx:id="mass1Text" layoutX="68.0" layoutY="42.0" onAction="#updateStars" onInputMethodTextChanged="#updateStars" prefHeight="25.0" prefWidth="115.0" />
+                  <Label layoutX="24.0" layoutY="76.0" text="Radius" />
+                  <TextField fx:id="radius1Text" layoutX="68.0" layoutY="72.0" onAction="#updateStars" onInputMethodTextChanged="#updateStars" prefHeight="25.0" prefWidth="115.0" />
+                  <TextField fx:id="radius2Text" layoutX="68.0" layoutY="172.0" onAction="#updateStars" onInputMethodTextChanged="#updateStars" prefHeight="25.0" prefWidth="114.0" />
+                  <Label layoutX="24.0" layoutY="175.0" text="Radius" />
+                  <TextField fx:id="mass2Text" layoutX="68.0" layoutY="142.0" onAction="#updateStars" onInputMethodTextChanged="#updateStars" prefHeight="25.0" prefWidth="114.0" />
+                  <Label layoutX="24.0" layoutY="145.0" text="Mass" />
+                  <Label layoutX="14.0" layoutY="114.0" text="Star 2">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <ComboBox fx:id="mass1UnitsBox" layoutX="186.0" layoutY="42.0" onInputMethodTextChanged="#updateStarUnits" prefHeight="25.0" prefWidth="65.0" />
+                  <ComboBox fx:id="radius1UnitsBox" layoutX="186.0" layoutY="72.0" prefHeight="25.0" prefWidth="65.0" />
+                  <ComboBox fx:id="mass2UnitsBox" layoutX="186.0" layoutY="142.0" prefHeight="25.0" prefWidth="65.0" />
+                  <ComboBox fx:id="radius2UnitsBox" layoutX="186.0" layoutY="172.0" prefHeight="25.0" prefWidth="65.0" />
+                  <ComboBox fx:id="distanceUnitsBox" layoutX="186.0" layoutY="222.0" prefHeight="25.0" prefWidth="65.0" />
+                  <Label layoutX="14.0" layoutY="225.0" text="Distance" />
+                  <TextField fx:id="distanceText" layoutX="68.0" layoutY="222.0" onAction="#updateStars" onInputMethodTextChanged="#updateStars" prefHeight="25.0" prefWidth="114.0" />
+                  <CheckBox fx:id="equalDensitiesChk" layoutX="24.0" layoutY="277.0" mnemonicParsing="false" onAction="#toggleEqualStellarDensity" onMouseClicked="#toggleEqualStellarDensity" text="Use equal stellar densities" />
+                  <CheckBox fx:id="showOrbitsChk" layoutX="24.0" layoutY="307.0" mnemonicParsing="false" onMouseClicked="#toggleShowOrbits" selected="true" text="Show orbits" />
+               </children>
+            </AnchorPane>
+         </content>
+      </Tab>
+      <Tab text="Field">
+         <content>
+            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <CheckBox fx:id="showFieldChk" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" onAction="#toggleShowField" onMouseClicked="#toggleShowField" selected="true" text="Show field" />
+                  <Label layoutX="14.0" layoutY="45.0" text="Number of x points" />
+                  <TextField fx:id="numXPointsText" layoutX="123.0" layoutY="41.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" text="9" />
+                  <TextField fx:id="numYPointsText" layoutX="123.0" layoutY="71.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" text="9" />
+                  <Label layoutX="14.0" layoutY="75.0" text="Number of y points" />
+                  <Label layoutX="14.0" layoutY="105.0" text="Number of z points" />
+                  <TextField fx:id="numZPointsText" layoutX="123.0" layoutY="101.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" text="1" />
+                  <TextField fx:id="zAxisRotText" layoutX="123.0" layoutY="321.0" prefHeight="25.0" prefWidth="60.0" />
+                  <Label layoutX="14.0" layoutY="325.0" text="Z axis rotation" />
+                  <Label layoutX="14.0" layoutY="295.0" text="Y axis rotation" />
+                  <TextField fx:id="yAxisRotText" layoutX="123.0" layoutY="291.0" prefHeight="25.0" prefWidth="60.0" />
+                  <TextField layoutX="123.0" layoutY="261.0" prefHeight="25.0" prefWidth="60.0" fx:id="xAxisRotText" />
+                  <Label layoutX="14.0" layoutY="265.0" text="X axis rotation" />
+                  <Label layoutX="14.0" layoutY="155.0" text="X points separation" />
+                  <TextField layoutX="123.0" layoutY="151.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" text="9" fx:id="xPointsDistText" />
+                  <TextField fx:id="yPointsDistText" layoutX="123.0" layoutY="181.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" text="9" />
+                  <Label layoutX="14.0" layoutY="185.0" text="Y points separation" />
+                  <Label layoutX="14.0" layoutY="215.0" text="Z points separation" />
+                  <TextField fx:id="zPointsDistText" layoutX="123.0" layoutY="211.0" onAction="#updatePoints" onInputMethodTextChanged="#updatePoints" prefHeight="25.0" prefWidth="60.0" text="9" />
+                  <ComboBox layoutX="186.0" layoutY="151.0" prefHeight="25.0" prefWidth="65.0" fx:id="xPointsDistUnitsBox" />
+                  <ComboBox fx:id="yPointsDistUnitsBox" layoutX="186.0" layoutY="181.0" prefHeight="25.0" prefWidth="65.0" />
+                  <ComboBox fx:id="zPointsDistUnitsBox" layoutX="186.0" layoutY="211.0" prefHeight="25.0" prefWidth="65.0" />
+                  <ComboBox layoutX="186.0" layoutY="261.0" prefHeight="25.0" prefWidth="65.0" fx:id="xAxisRotUnitsBox" />
+                  <ComboBox fx:id="yAxisRotUnitsBox" layoutX="186.0" layoutY="291.0" prefHeight="25.0" prefWidth="65.0" />
+                  <ComboBox fx:id="zAxisRotUnitsBox" layoutX="186.0" layoutY="321.0" prefHeight="25.0" prefWidth="65.0" />
+               </children>
+            </AnchorPane>
+         </content>
+      </Tab>
+   </tabs>
+</TabPane>

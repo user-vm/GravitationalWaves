@@ -1,0 +1,33 @@
+
+package com.GravityWaves.Util;
+
+import javafx.scene.transform.*;
+import javafx.scene.shape.*;
+
+public class ArrowBox {
+	
+	public static double boxWidth = 0.2;
+	public Box box;
+	public TriangleMesh tip;
+	public Xform tipXform;
+	public Xform boxXform;
+	public Scale boxScaleX;
+	
+	public ArrowBox(){
+		this(0,0,0);
+	}
+	
+	public ArrowBox(double xPos, double yPos, double zPos){
+		box = new Box(boxWidth,boxWidth,boxWidth);
+		boxXform = new Xform();
+		boxXform.setTranslate(xPos,yPos,zPos);
+		boxXform.getChildren().add(box);
+		boxScaleX = new Scale(1,1,1,-boxWidth/2,0,0);
+		boxXform.getTransforms().add(boxScaleX);
+	}
+	
+	public void scaleX(double xScale){
+		boxScaleX.setX(xScale);
+	}
+
+}

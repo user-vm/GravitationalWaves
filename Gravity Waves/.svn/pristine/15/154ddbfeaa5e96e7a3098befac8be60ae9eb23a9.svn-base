@@ -1,0 +1,33 @@
+// fuck it, I'm using this for shit
+
+package com.GravityWaves.Main;
+
+import javafx.application.Application;
+import javafx.scene.*;
+import javafx.stage.Stage;
+import javafx.fxml.*;
+
+public class Main extends Application {
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+    	
+    	primaryStage.setResizable(true);
+    	primaryStage.setMinWidth(700);
+    	primaryStage.setMinHeight(440);
+    	
+    	Scene scene = new Scene(FXMLLoader.load(getClass().getResource("leftpane.fxml")));
+    	
+    	primaryStage.setScene(scene);
+    	
+    	primaryStage.show();
+        
+    }
+
+    /**
+     * Java main for when running without JavaFX launcher
+     */
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
